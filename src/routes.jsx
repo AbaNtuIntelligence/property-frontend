@@ -11,6 +11,7 @@ import WishlistPage from "./pages/wishlist/WishlistPage";
 import PropertyForm from "./components/property/PropertyForm";
 import Unauthorized from "./components/common/Unauthorized";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Dashboard from "./pages/dashboard/Dashboard";
 import "./styles/global.css";
 
 

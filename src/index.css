@@ -1,4 +1,4 @@
-/* Reset some defaults */
+@import './App.css';
 * {
   box-sizing: border-box;
   margin: 0;
@@ -45,8 +45,7 @@ button:hover {
   gap: 1.5rem;
 }
 
-/* index.css - Entry point styles */
-@import './App.css';
+
 
 * {
   margin: 0;

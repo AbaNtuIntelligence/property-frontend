@@ -8,7 +8,6 @@ import Properties from "./pages/properties/Properties";
 import PropertyDetail from "./pages/property-detail/PropertyDetail";
 import BookingPage from "./pages/booking/BookingPage";
 import WishlistPage from "./pages/wishlist/WishlistPage";
-import "./Dashboard.css"
 import PropertyForm from "./components/property/PropertyForm";
 import Unauthorized from "./components/common/Unauthorized";
 import ProtectedRoute from "./components/auth/ProtectedRoute";

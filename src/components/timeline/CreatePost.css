@@ -1,0 +1,315 @@
+.create-post-section {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.create-post-section:hover {
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.create-post-input {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+}
+
+.create-post-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.create-post-input input {
+  flex: 1;
+  padding: 15px 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 30px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.3s;
+  background: #f8f8f8;
+  cursor: pointer;
+  color: #333;
+}
+
+.create-post-input input:hover {
+  background: #f0f0f0;
+  border-color: #ff385c;
+}
+
+.create-post-input input:focus {
+  background: white;
+  border-color: #ff385c;
+  cursor: text;
+  box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.1);
+}
+
+.create-post-input input::placeholder {
+  color: #999;
+}
+
+/* Create Post Form */
+.create-post-form {
+  margin-top: 20px;
+  animation: slideDown 0.3s ease;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 20px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.create-post-form textarea {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  outline: none;
+  resize: none;
+  font-family: inherit;
+  margin-bottom: 15px;
+  transition: all 0.3s;
+  background: #fafafa;
+}
+
+.create-post-form textarea:focus {
+  border-color: #ff385c;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.1);
+}
+
+.create-post-form textarea::placeholder {
+  color: #999;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.form-actions button {
+  padding: 10px 24px;
+  border-radius: 24px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+}
+
+.form-actions button[type="button"] {
+  background: none;
+  border: 1px solid #ddd;
+  color: #666;
+}
+
+.form-actions button[type="button"]:hover {
+  background: #f5f5f5;
+  border-color: #ccc;
+  color: #333;
+}
+
+.form-actions button[type="submit"] {
+  background: #ff385c;
+  color: white;
+  box-shadow: 0 2px 8px rgba(255, 56, 92, 0.2);
+}
+
+.form-actions button[type="submit"]:hover:not(:disabled) {
+  background: #e31c5f;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 56, 92, 0.3);
+}
+
+.form-actions button[type="submit"]:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.form-actions button[type="submit"]:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
+}
+
+/* Add Image Button (optional - for future enhancement) */
+.add-image-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #f5f5f5;
+  border: 1px dashed #ccc;
+  border-radius: 20px;
+  color: #666;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-bottom: 15px;
+}
+
+.add-image-btn:hover {
+  background: #f0f0f0;
+  border-color: #ff385c;
+  color: #ff385c;
+}
+
+.add-image-btn span {
+  font-size: 1.2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .create-post-section {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+  }
+
+  .create-post-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .create-post-input {
+    gap: 10px;
+  }
+
+  .create-post-input input {
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+
+  .create-post-form {
+    margin-top: 15px;
+    padding-top: 15px;
+  }
+
+  .create-post-form textarea {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+
+  .form-actions {
+    gap: 8px;
+  }
+
+  .form-actions button {
+    padding: 8px 20px;
+    font-size: 0.9rem;
+  }
+
+  .add-image-btn {
+    padding: 6px 14px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .create-post-section {
+    padding: 12px;
+  }
+
+  .create-post-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .create-post-input input {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions button {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .add-image-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Optional: Loading state for submit button */
+.form-actions button[type="submit"].loading {
+  position: relative;
+  color: transparent;
+}
+
+.form-actions button[type="submit"].loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin-left: -8px;
+  margin-top: -8px;
+  border: 2px solid white;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: button-spin 0.8s linear infinite;
+}
+
+@keyframes button-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Success animation for post creation */
+@keyframes postCreated {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+    background: #e8f5e9;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.post-created-success {
+  animation: postCreated 0.5s ease;
+}
+
+/* Error state */
+.form-error {
+  color: #e31c5f;
+  font-size: 0.85rem;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #fee;
+  border-radius: 8px;
+  border-left: 3px solid #e31c5f;
+}

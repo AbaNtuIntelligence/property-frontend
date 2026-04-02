@@ -1,0 +1,275 @@
+.booking-form-container {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.booking-form-container h2 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+/* Payment Methods */
+.payment-methods {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.payment-method {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.payment-method:hover {
+  border-color: #ff385c;
+  background: #fff5f7;
+}
+
+.payment-method.active {
+  border-color: #ff385c;
+  background: #fff5f7;
+}
+
+.payment-method input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #ff385c;
+}
+
+.payment-method span {
+  font-size: 1rem;
+  color: #333;
+  font-weight: 500;
+}
+
+/* Payment Form */
+.payment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.card-details h3,
+.billing-section h3 {
+  font-size: 1.3rem;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input {
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #ff385c;
+  box-shadow: 0 0 0 3px rgba(255, 56, 92, 0.1);
+}
+
+.form-group input.error {
+  border-color: #dc3545;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+/* PayPal Info */
+.paypal-info {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.paypal-info p {
+  color: #666;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Checkbox */
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #ff385c;
+}
+
+.checkbox-group label {
+  color: #666;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+/* Total Amount */
+.total-amount {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  font-size: 1.2rem;
+}
+
+.total-amount .amount {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #ff385c;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.back-btn {
+  flex: 1;
+  padding: 15px;
+  background: white;
+  color: #666;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.back-btn:hover {
+  background: #f5f5f5;
+  border-color: #ccc;
+}
+
+.pay-btn {
+  flex: 2;
+  padding: 15px;
+  background: #ff385c;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.pay-btn:hover:not(:disabled) {
+  background: #e31c5f;
+}
+
+.pay-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.secure-payment {
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .booking-form-container {
+    padding: 20px;
+  }
+
+  .booking-form-container h2 {
+    font-size: 1.5rem;
+  }
+
+  .payment-methods {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .total-amount {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .back-btn,
+  .pay-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-form-container {
+    padding: 15px;
+  }
+
+  .booking-form-container h2 {
+    font-size: 1.3rem;
+  }
+
+  .payment-method {
+    padding: 12px;
+  }
+
+  .form-group input {
+    padding: 10px 12px;
+  }
+
+  .total-amount .amount {
+    font-size: 1.5rem;
+  }
+}

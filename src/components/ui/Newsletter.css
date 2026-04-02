@@ -1,0 +1,504 @@
+.newsletter-section {
+  position: relative;
+  padding: 80px 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  overflow: hidden;
+}
+
+.newsletter-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.newsletter-content {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Header Styles */
+.newsletter-header {
+  margin-bottom: 40px;
+}
+
+.newsletter-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.newsletter-header h2 {
+  font-size: 2.8rem;
+  color: white;
+  margin-bottom: 15px;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.newsletter-description {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Form Styles */
+.newsletter-form {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 50px;
+  position: relative;
+}
+
+.input-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  color: #999;
+  transition: color 0.3s;
+}
+
+.newsletter-form input {
+  width: 100%;
+  padding: 18px 25px 18px 55px;
+  border: 2px solid transparent;
+  border-radius: 50px;
+  font-size: 1rem;
+  transition: all 0.3s;
+  background: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.newsletter-form input:focus {
+  outline: none;
+  border-color: #ff385c;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.newsletter-form input:focus + .input-icon {
+  color: #ff385c;
+}
+
+.newsletter-form input.error {
+  border-color: #ff4444;
+  background: #fff8f8;
+}
+
+.error-message {
+  position: absolute;
+  left: 20px;
+  bottom: -30px;
+  color: #ff4444;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: white;
+  padding: 5px 15px;
+  border-radius: 30px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-icon {
+  font-size: 1rem;
+}
+
+.subscribe-btn {
+  padding: 18px 35px;
+  background: #ff385c;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  box-shadow: 0 10px 30px rgba(255, 56, 92, 0.3);
+}
+
+.subscribe-btn:hover:not(:disabled) {
+  background: #e31c5f;
+  transform: translateY(-2px);
+  box-shadow: 0 15px 40px rgba(227, 28, 95, 0.4);
+}
+
+.subscribe-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-icon {
+  font-size: 1.2rem;
+  transition: transform 0.3s;
+}
+
+.subscribe-btn:hover .btn-icon {
+  transform: translateX(5px);
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Success Message */
+.success-message {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 40px;
+  margin-bottom: 50px;
+  position: relative;
+  overflow: hidden;
+  animation: popIn 0.5s ease;
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.success-icon {
+  width: 60px;
+  height: 60px;
+  background: #4CAF50;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  margin: 0 auto 20px;
+  animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.success-message h3 {
+  color: #333;
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+
+.success-message p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.confetti {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.confetti span {
+  position: absolute;
+  font-size: 2rem;
+  animation: confetti 3s ease-in-out infinite;
+}
+
+.confetti span:nth-child(1) {
+  top: 20%;
+  left: 20%;
+  animation-delay: 0s;
+}
+
+.confetti span:nth-child(2) {
+  top: 50%;
+  right: 20%;
+  animation-delay: 0.5s;
+}
+
+.confetti span:nth-child(3) {
+  bottom: 20%;
+  left: 50%;
+  animation-delay: 1s;
+}
+
+@keyframes confetti {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
+}
+
+/* Benefits Grid */
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+.benefit-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 25px 15px;
+  text-align: center;
+  transition: all 0.3s;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.benefit-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.benefit-icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+  transition: all 0.3s;
+}
+
+.benefit-card:hover .benefit-icon-wrapper {
+  background: #ff385c;
+  transform: scale(1.1);
+}
+
+.benefit-icon {
+  font-size: 1.8rem;
+  transition: transform 0.3s;
+}
+
+.benefit-card:hover .benefit-icon {
+  transform: scale(1.1);
+}
+
+.benefit-text h4 {
+  color: white;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.benefit-text p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Privacy Note */
+.privacy-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.privacy-icon {
+  font-size: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .benefits-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .newsletter-section {
+    padding: 60px 0;
+  }
+
+  .newsletter-header h2 {
+    font-size: 2rem;
+  }
+
+  .newsletter-description {
+    font-size: 1rem;
+  }
+
+  .newsletter-form {
+    flex-direction: column;
+  }
+
+  .subscribe-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .error-message {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    margin-top: 10px;
+  }
+
+  .benefits-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .benefit-card {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    padding: 15px;
+  }
+
+  .benefit-icon-wrapper {
+    margin: 0 15px 0 0;
+  }
+
+  .privacy-note {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .newsletter-section {
+    padding: 40px 0;
+  }
+
+  .newsletter-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .newsletter-badge {
+    font-size: 0.75rem;
+  }
+
+  .success-message {
+    padding: 30px 20px;
+  }
+
+  .success-message h3 {
+    font-size: 1.3rem;
+  }
+
+  .success-message p {
+    font-size: 0.95rem;
+  }
+}
+
+/* Hover Effects */
+.benefit-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.benefit-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.benefit-card:hover::before {
+  left: 100%;
+}
+
+/* Pulse Animation for Subscribe Button */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 56, 92, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(255, 56, 92, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 56, 92, 0);
+  }
+}
+
+.subscribe-btn:not(:disabled) {
+  animation: pulse 2s infinite;
+}
+
+.subscribe-btn:not(:disabled):hover {
+  animation: none;
+}

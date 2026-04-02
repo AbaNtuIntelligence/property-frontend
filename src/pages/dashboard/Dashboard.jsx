@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import propertyService from '../services/propertyService';  // Direct import
-import './Dashboard.css';
+import "./pages/dashboard/Dashboard.css"
 
 export default function Dashboard() {
     const { user } = useAuth();

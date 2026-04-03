@@ -7,6 +7,10 @@ import RightSidebar from '../timeline/RightSidebar';
 import { mockTrending, mockSuggested, mockDestinations } from '../../data/mockTimelineData';
 import './TimelineLayout.css';
 
+<div className="main-content">
+  <Outlet />
+</div>
+
 export default function TimelineLayout() {
   const { user } = useAuth();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);

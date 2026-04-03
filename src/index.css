@@ -6,6 +6,18 @@
   font-family: 'Inter', 'Segoe UI', sans-serif;
 }
 
+:root {
+  --navbar-height: 70px;
+}
+
+.main-content {
+  padding-top: var(--navbar-height);
+}
+
+  .main-content {
+    padding-top: var(--navbar-height);
+  }
+
 body {
   background-color: #f4f6f9;
   color: #1e1e1e;

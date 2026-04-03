@@ -5,6 +5,10 @@
   box-sizing: border-box;
 }
 
+body {
+  padding-top: var(--navbar-height);
+}
+
 html, body {
   margin: 0 !important;
   padding: 0 !important;
@@ -30,16 +34,251 @@ html, body {
   min-height: calc(100vh - 80px);
 }
 
-/* Navbar should be fixed but not create space */
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  background: white;
-  height: 70px; /* Fixed height */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+/* ===== MOBILE STYLES - FIXED FOR ZOOM ===== */
+@media (max-width: 768px) {
+  .navbar {
+    min-height: 60px;  /* Keep as min-height, not fixed */
+    height: auto;
+  }
+
+  .nav-container {
+    padding: 10px 16px;
+    gap: 12px;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .nav-links {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 80%;
+    max-width: 320px;
+    height: 100vh;
+    background: white;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 80px 20px 30px;
+    gap: 0.5rem;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-links.active {
+    right: 0;
+  }
+
+  /* CRITICAL FIX: Allow nav items to expand vertically when zoomed */
+  .nav-link {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 1rem;
+    border-radius: 12px;
+    white-space: normal;  /* Allow text to wrap */
+    word-break: break-word;  /* Break long words */
+    line-height: 1.4;  /* Better line height for wrapped text */
+    min-height: 48px;  /* Minimum touch target, but can grow */
+    height: auto;  /* Allow natural height */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Ensure the icon and text are properly aligned */
+  .nav-icon {
+    font-size: 1.2rem;
+    width: 28px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .nav-label {
+    white-space: normal;  /* ALLOW TEXT TO WRAP - This is key for "Stories" */
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  /* Fix for badges */
+  .nav-badge {
+    flex-shrink: 0;
+    align-self: center;
+    margin-left: auto;  /* Push badge to the right */
+  }
+
+  /* User menu fixes */
+  .user-menu {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem 0;
+    border-left: none;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 1rem;
+    gap: 12px;
+  }
+
+  .user-info {
+    padding: 0 16px;
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;  /* Allow wrapping if needed */
+    gap: 8px;
+  }
+
+  .user-name {
+    white-space: normal;  /* Allow name to wrap */
+    word-break: break-word;
+    line-height: 1.4;
+  }
+
+  .logout-btn, .login-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 16px;
+    margin-top: 0;
+    white-space: normal;  /* Allow button text to wrap */
+    min-height: 44px;
+    height: auto;
+  }
+
+  .logout-btn {
+    background: #fee;
+    color: #e31c5f;
+  }
+
+  /* Menu Overlay */
+  .menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    animation: fadeIn 0.3s ease;
+  }
+}
+
+/* ===== EXTRA SMALL / ZOOMED IN PROTECTION ===== */
+@media (max-width: 480px) {
+  .nav-container {
+    padding: 8px 12px;
+  }
+
+  .logo-text {
+    display: none;
+  }
+
+  .logo-icon {
+    font-size: 1.8rem;
+  }
+
+  .nav-links {
+    width: 85%;
+    padding: 70px 15px 20px;
+  }
+
+  .nav-link {
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    min-height: 44px;
+    gap: 10px;
+  }
+
+  .nav-icon {
+    font-size: 1.1rem;
+    width: 24px;
+  }
+
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .user-name {
+    font-size: 0.85rem;
+  }
+}
+
+/* ===== EXTREME ZOOM PROTECTION (300%+ zoom) ===== */
+@media (max-width: 360px) {
+  .nav-links {
+    padding: 65px 12px 20px;
+  }
+  
+  .nav-link {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    min-height: 40px;
+    gap: 8px;
+  }
+  
+  .nav-icon {
+    font-size: 1rem;
+    width: 22px;
+  }
+  
+  .nav-label {
+    font-size: 0.9rem;
+  }
+  
+  .user-menu {
+    gap: 8px;
+  }
+  
+  .logout-btn, .login-btn {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    min-height: 40px;
+  }
+  
+  .user-info {
+    padding: 0 12px;
+  }
+  
+  .user-name {
+    font-size: 0.8rem;
+  }
+}
+
+/* ===== LANDSCAPE MODE ON MOBILE ===== */
+@media (max-height: 500px) and (orientation: landscape) {
+  .nav-links {
+    padding: 60px 20px 15px;
+    gap: 0.25rem;
+  }
+  
+  .nav-link {
+    padding: 8px 16px;
+    min-height: 40px;
+  }
+  
+  .user-menu {
+    margin-top: 0.5rem;
+    padding: 0.5rem 0;
+  }
+}
+
+/* Then update the body padding to use the navbar's actual height */
+body {
+  padding-top: 70px;  /* Fallback value */
+  /* Or better yet, use a CSS variable */
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    min-height: 60px;  /* CHANGE: height → min-height */
+    height: auto;
+  }
+  
+  body {
+    padding-top: 60px;
+  }
 }
 
 /* Remove any top margins from main content */
@@ -238,3 +477,5 @@ html, body {
 body.sidebar-open {
   overflow: hidden;
 }
+
+

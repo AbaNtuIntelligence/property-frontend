@@ -1,18 +1,23 @@
 /* ===== NAVBAR BASE STYLES ===== */
 .navbar {
-  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   background: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  height: 70px;
+  min-height: var(--navbar-height, 70px);  /* Changed: height → min-height with fallback */
+  height: auto;  /* Allow natural height expansion */
+  width: 100%;
   transition: all 0.3s ease;
+  position: sticky;
+  top: 0;
+  overflow: visible;  /* Ensure nothing gets cut off */
 }
 
 .navbar.scrolled {
-  height: 60px;
+  min-height: 60px;  /* Changed: height → min-height */
+  height: auto;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.95);
@@ -21,12 +26,14 @@
 .nav-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 20px;
-  height: 100%;
+  padding: 12px 20px;  /* Changed: vertical padding instead of fixed height */
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: relative;
+  gap: 16px;  /* Add gap for spacing */
+  min-height: inherit;
+  flex-wrap: wrap;  /* Allow wrapping on extreme zoom */
 }
 
 /* ===== LOGO ===== */
@@ -39,16 +46,19 @@
   font-size: 1.3rem;
   color: #ff385c;
   z-index: 1001;
+  flex-shrink: 0;  /* Prevent logo from shrinking */
 }
 
 .logo-icon {
   font-size: 1.5rem;
+  line-height: 1;  /* Prevent line-height issues */
 }
 
 .logo-text {
   background: linear-gradient(135deg, #ff385c 0%, #e31c5f 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  white-space: nowrap;  /* Keep logo text on one line */
 }
 
 /* ===== HAMBURGER MENU ===== */
@@ -63,6 +73,7 @@
   cursor: pointer;
   padding: 0;
   z-index: 1001;
+  flex-shrink: 0;  /* Prevent hamburger from shrinking */
 }
 
 .hamburger-line {
@@ -107,6 +118,8 @@
   border-radius: 30px;
   transition: all 0.3s;
   position: relative;
+  white-space: nowrap;  /* Keep nav items on one line on desktop */
+  line-height: 1.4;  /* Proper line height */
 }
 
 .nav-link:hover {
@@ -116,6 +129,12 @@
 
 .nav-icon {
   font-size: 1.1rem;
+  flex-shrink: 0;  /* Prevent icon from shrinking */
+  line-height: 1;
+}
+
+.nav-label {
+  white-space: nowrap;  /* Keep label text on one line */
 }
 
 .nav-badge {
@@ -125,6 +144,8 @@
   padding: 2px 6px;
   border-radius: 30px;
   margin-left: 4px;
+  flex-shrink: 0;
+  line-height: 1.2;
 }
 
 /* ===== USER MENU ===== */
@@ -134,12 +155,14 @@
   gap: 1rem;
   padding-left: 1rem;
   border-left: 1px solid #e0e0e0;
+  flex-shrink: 0;
 }
 
 .user-info {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .user-avatar {
@@ -152,6 +175,7 @@
   justify-content: center;
   font-size: 1.2rem;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .user-avatar img {
@@ -164,6 +188,8 @@
   font-weight: 500;
   color: #333;
   font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: visible;  /* Ensure text isn't cut */
 }
 
 /* ===== BUTTONS ===== */
@@ -179,6 +205,8 @@
   cursor: pointer;
   transition: all 0.3s;
   text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .logout-btn {
@@ -204,12 +232,22 @@
 
 .btn-icon {
   font-size: 1rem;
+  line-height: 1;
+}
+
+.btn-label {
+  white-space: nowrap;
 }
 
 /* ===== MOBILE STYLES ===== */
 @media (max-width: 768px) {
   .navbar {
-    height: 60px;
+    min-height: 60px;  /* Fixed min-height for mobile */
+  }
+
+  .nav-container {
+    padding: 10px 16px;  /* Adjusted padding for mobile */
+    gap: 12px;
   }
 
   .hamburger {
@@ -225,13 +263,14 @@
     height: 100vh;
     background: white;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;  /* Changed: stretch instead of flex-start */
     padding: 80px 20px 30px;
     gap: 0.5rem;
     box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
     transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1000;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .nav-links.active {
@@ -240,9 +279,17 @@
 
   .nav-link {
     width: 100%;
-    padding: 15px 16px;
+    padding: 12px 16px;  /* Slightly reduced for better fit */
     font-size: 1rem;
     border-radius: 12px;
+    white-space: normal;  /* Allow text to wrap on mobile */
+    word-break: break-word;
+    min-height: 48px;  /* Ensure minimum tap target size */
+  }
+
+  .nav-label {
+    white-space: normal;  /* Allow label to wrap */
+    line-height: 1.4;
   }
 
   .nav-link:hover {
@@ -252,6 +299,7 @@
   .nav-icon {
     font-size: 1.2rem;
     width: 28px;
+    flex-shrink: 0;
   }
 
   .user-menu {
@@ -262,17 +310,26 @@
     border-left: none;
     border-top: 1px solid #e0e0e0;
     margin-top: 1rem;
+    gap: 12px;
   }
 
   .user-info {
     padding: 0 16px;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .user-name {
+    white-space: normal;  /* Allow name to wrap if needed */
+    word-break: break-word;
   }
 
   .logout-btn, .login-btn {
     width: 100%;
     justify-content: center;
-    padding: 14px;
-    margin-top: 0.5rem;
+    padding: 12px 16px;
+    margin-top: 0;
+    white-space: normal;  /* Allow button text to wrap */
   }
 
   .logout-btn {
@@ -293,10 +350,15 @@
   }
 }
 
-/* ===== SMALL MOBILE STYLES ===== */
+/* ===== SMALL MOBILE & ZOOM STYLES ===== */
 @media (max-width: 480px) {
+  .nav-container {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
   .logo-text {
-    display: none; /* Hide text on very small screens, keep icon only */
+    display: none;  /* Hide text on very small screens */
   }
 
   .logo-icon {
@@ -309,22 +371,48 @@
   }
 
   .nav-link {
-    padding: 12px 14px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    min-height: 44px;
   }
 
   .user-avatar {
     width: 28px;
     height: 28px;
   }
+  
+  .user-name {
+    font-size: 0.85rem;
+  }
 }
 
-/* ===== ANIMATIONS ===== */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+/* ===== EXTREME ZOOM PROTECTION ===== */
+@media (max-width: 360px), (max-height: 500px) {
+  .nav-container {
+    padding: 6px 10px;
   }
-  to {
-    opacity: 1;
+  
+  .logo-icon {
+    font-size: 1.5rem;
+  }
+  
+  .nav-link {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .nav-icon {
+    font-size: 1rem;
+    width: 24px;
+  }
+  
+  .user-menu {
+    gap: 8px;
+  }
+  
+  .logout-btn, .login-btn {
+    padding: 10px 12px;
+    font-size: 0.85rem;
   }
 }
 
@@ -346,4 +434,22 @@
     background: #ff385c;
     border-radius: 50%;
   }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ===== UTILITY CLASSES ===== */
+/* Prevent body scroll when menu is open (handled by JS, but add this just in case) */
+body.menu-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
 }

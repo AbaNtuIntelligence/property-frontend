@@ -1,60 +1,33 @@
-import axios from 'axios';
+// src/pages/services/apiService.js
+import apiClient from './apiClient';
 
-const API_URL = 'http://127.0.0.1:8000/api/accounts/';
+class ApiService {
+  async fetchData(endpoint) {
+    return apiClient.get(endpoint);
+  }
 
-class AuthService {
-    async login(username, password) {
-        try {
-            const response = await axios.post(API_URL + 'login/', {
-                username,
-                password
-            });
-            if (response.data.access) {
-                localStorage.setItem('user', JSON.stringify(response.data.user));
-                localStorage.setItem('access_token', response.data.access);
-                localStorage.setItem('refresh_token', response.data.refresh);
-                axios.defaults.headers.common['Authorization'] = 'Bearer ' + response.data.access;
-            }
-            return response.data;
-        } catch (error) {
-            throw error.response?.data || error.message;
-        }
+  async postData(endpoint, data) {
+    return apiClient.post(endpoint, data);
+  }
+
+  async updateData(endpoint, data) {
+    return apiClient.put(endpoint, data);
+  }
+
+  async deleteData(endpoint) {
+    return apiClient.delete(endpoint);
+  }
+
+  async checkConnection() {
+    try {
+      const result = await apiClient.get('/api/test/');
+      console.log('✅ API Connection successful:', result);
+      return { connected: true, data: result };
+    } catch (error) {
+      console.error('❌ API Connection failed:', error);
+      return { connected: false, error };
     }
-
-    async register(userData) {
-        try {
-            const response = await axios.post(API_URL + 'register/', userData);
-            if (response.data.access) {
-                localStorage.setItem('user', JSON.stringify(response.data.user));
-                localStorage.setItem('access_token', response.data.access);
-                localStorage.setItem('refresh_token', response.data.refresh);
-                axios.defaults.headers.common['Authorization'] = 'Bearer ' + response.data.access;
-            }
-            return response.data;
-        } catch (error) {
-            throw error.response?.data || error.message;
-        }
-    }
-
-    logout() {
-        localStorage.removeItem('user');
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        delete axios.defaults.headers.common['Authorization'];
-    }
-
-    getCurrentUser() {
-        const userStr = localStorage.getItem('user');
-        return userStr ? JSON.parse(userStr) : null;
-    }
-
-    isAuthenticated() {
-        return !!localStorage.getItem('access_token');
-    }
-
-    getToken() {
-        return localStorage.getItem('access_token');
-    }
+  }
 }
 
-export default new AuthService();
+export default new ApiService();

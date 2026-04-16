@@ -5,6 +5,9 @@ import { AuthProvider } from './hooks/useAuth';
 import { BookingProvider } from './hooks/useBooking';
 import Footer from './components/layout/Footer';  // Import Footer
 import './App.css';
+import ConnectionTest from './components/ConnectionTest';
+
+
 
 function App() {
     return (
@@ -16,6 +19,7 @@ function App() {
                             <AppRoutes />
                         </div>
                         <Footer />
+                        <ConnectionTest />
                     </div>
                 </Router>
             </BookingProvider>

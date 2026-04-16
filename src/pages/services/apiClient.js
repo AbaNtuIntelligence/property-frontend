@@ -1,59 +1,71 @@
-import authService from './authService';
-
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+// src/pages/services/apiClient.js
+import axiosInstance from './axiosConfig';
 
 class ApiClient {
-    getAuthHeaders() {
-        const token = authService.getToken();
-        return {
-            'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Bearer ${token}` })
-        };
+  async get(endpoint, params = {}) {
+    try {
+      const response = await axiosInstance.get(endpoint, { params });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
     }
+  }
 
-    async request(endpoint, options = {}) {
-        const url = `${API_BASE_URL}${endpoint}`;
-        const config = {
-            headers: this.getAuthHeaders(),
-            ...options
-        };
-
-        try {
-            const response = await fetch(url, config);
-            
-            if (!response.ok) {
-                const error = await response.json().catch(() => ({}));
-                throw new Error(error.message || `Request failed with status ${response.status}`);
-            }
-            
-            return await response.json();
-        } catch (error) {
-            console.error(`API request error (${endpoint}):`, error);
-            throw error;
-        }
+  async post(endpoint, data = {}) {
+    try {
+      const response = await axiosInstance.post(endpoint, data);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
     }
+  }
 
-    get(endpoint) {
-        return this.request(endpoint, { method: 'GET' });
+  async put(endpoint, data = {}) {
+    try {
+      const response = await axiosInstance.put(endpoint, data);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
     }
+  }
 
-    post(endpoint, data) {
-        return this.request(endpoint, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+  async patch(endpoint, data = {}) {
+    try {
+      const response = await axiosInstance.patch(endpoint, data);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
     }
+  }
 
-    put(endpoint, data) {
-        return this.request(endpoint, {
-            method: 'PUT',
-            body: JSON.stringify(data)
-        });
+  async delete(endpoint) {
+    try {
+      const response = await axiosInstance.delete(endpoint);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
     }
+  }
 
-    delete(endpoint) {
-        return this.request(endpoint, { method: 'DELETE' });
+  handleError(error) {
+    if (error.response) {
+      return {
+        status: error.response.status,
+        message: error.response.data?.message || error.response.data?.detail || 'Server error',
+        data: error.response.data,
+      };
+    } else if (error.request) {
+      return {
+        status: 0,
+        message: 'Cannot connect to server. Please check your internet connection.',
+      };
+    } else {
+      return {
+        status: -1,
+        message: error.message || 'An error occurred',
+      };
     }
+  }
 }
 
 export default new ApiClient();

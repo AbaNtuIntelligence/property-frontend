@@ -1,69 +1,30 @@
-import authService from './authService';
-
-const API_URL = 'http://127.0.0.1:8000/api/rentals/';
+// src/pages/services/rentalService.js
+import apiClient from './apiClient';
 
 class RentalService {
-    getAuthHeader() {
-        const token = authService.getToken();
-        return {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        };
-    }
+  async getAllRentals(params = {}) {
+    return apiClient.get('/api/rentals/', params);
+  }
 
-    async createRental(rentalData) {
-        try {
-            const response = await fetch(API_URL + 'rentals/', {
-                method: 'POST',
-                headers: this.getAuthHeader(),
-                body: JSON.stringify(rentalData)
-            });
-            
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Failed to create rental');
-            }
-            
-            return await response.json();
-        } catch (error) {
-            console.error('Error creating rental:', error);
-            throw error;
-        }
-    }
+  async getRentalById(id) {
+    return apiClient.get(`/api/rentals/${id}/`);
+  }
 
-    async getUserRentals() {
-        try {
-            const response = await fetch(API_URL + 'rentals/my_rentals/', {
-                headers: this.getAuthHeader()
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to fetch rentals');
-            }
-            
-            return await response.json();
-        } catch (error) {
-            console.error('Error fetching rentals:', error);
-            return [];
-        }
-    }
+  async createRental(rentalData) {
+    return apiClient.post('/api/rentals/', rentalData);
+  }
 
-    async getRentalById(id) {
-        try {
-            const response = await fetch(API_URL + `rentals/${id}/`, {
-                headers: this.getAuthHeader()
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to fetch rental');
-            }
-            
-            return await response.json();
-        } catch (error) {
-            console.error('Error fetching rental:', error);
-            throw error;
-        }
-    }
+  async updateRental(id, rentalData) {
+    return apiClient.put(`/api/rentals/${id}/`, rentalData);
+  }
+
+  async deleteRental(id) {
+    return apiClient.delete(`/api/rentals/${id}/`);
+  }
+
+  async getMyRentals() {
+    return apiClient.get('/api/rentals/my-rentals/');
+  }
 }
 
 export default new RentalService();

@@ -1,6 +1,8 @@
 // src/pages/services/apiClient.js
 import axiosInstance from './axiosConfig';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
 class ApiClient {
   async get(endpoint, params = {}) {
     try {

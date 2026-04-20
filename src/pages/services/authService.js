@@ -1,13 +1,12 @@
-// src/pages/services/authService.js
 import axios from 'axios';
 import axiosInstance from './axiosConfig';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
 class AuthService {
   async login(username, password) {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/token/`, {
+      const response = await axios.post(`${API_BASE_URL}/api/accounts/login/`, {
         username,
         password,
       });
@@ -16,17 +15,19 @@ class AuthService {
         localStorage.setItem('access_token', response.data.access);
         localStorage.setItem('refresh_token', response.data.refresh);
         
-        // Get user info
-        const userInfo = await this.getCurrentUser();
-        localStorage.setItem('user', JSON.stringify(userInfo));
+        // Get user info from the login response
+        if (response.data.user) {
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+          return { success: true, user: response.data.user };
+        }
         
-        return { success: true, data: response.data, user: userInfo };
+        return { success: true, data: response.data };
       }
       return { success: false, error: 'No access token received' };
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.detail || 'Login failed',
+        error: error.response?.data?.detail || error.response?.data?.error || 'Login failed',
       };
     }
   }
@@ -40,7 +41,8 @@ class AuthService {
 
   async getCurrentUser() {
     try {
-      const response = await axiosInstance.get('/api/user/profile/');
+      // Fix: Change from /api/user/profile/ to /api/accounts/profile/
+      const response = await axiosInstance.get('/api/accounts/profile/');
       return response.data;
     } catch (error) {
       console.error('Failed to get user info:', error);

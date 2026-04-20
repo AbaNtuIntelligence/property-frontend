@@ -1,16 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import propertyService from '../services/propertyService';  // Direct import
+import propertyService from '../services/propertyService';
 import "./Dashboard.css";
 
+
+<button onClick={() => navigate('/property/new')} className="add-property-btn">
+  + Add New Property
+</button>
+
 export default function Dashboard() {
-    const { user } = useAuth();
     const navigate = useNavigate();
+    const [user, setUser] = useState(null);
     const [properties, setProperties] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
+
+    // Get user from localStorage on component mount
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                setUser(parsedUser);
+            } catch (error) {
+                console.error('Error parsing user:', error);
+            }
+        }
+        setLoading(false);
+    }, []);
 
     useEffect(() => {
         if (user) {
@@ -21,11 +39,11 @@ export default function Dashboard() {
     const fetchDashboardData = async () => {
         setLoading(true);
         try {
-            if (user.user_type === 'OWNER') {
+            if (user?.user_type === 'owner') {
                 // Fetch owner's properties
                 const props = await propertyService.getPropertiesByOwner(user.id);
                 setProperties(props);
-            } else if (user.user_type === 'SEEKER') {
+            } else if (user?.user_type === 'seeker') {
                 // Fetch seeker's bookings/rentals
                 // You'll need to implement this in your service
                 // const bookings = await bookingService.getUserBookings();
@@ -38,6 +56,13 @@ export default function Dashboard() {
         }
     };
 
+    const handleLogout = () => {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
+        navigate('/login');
+    };
+
     if (loading) {
         return (
             <div className="dashboard-loading">
@@ -47,29 +72,41 @@ export default function Dashboard() {
         );
     }
 
+    if (!user) {
+        return (
+            <div className="dashboard-error">
+                <p>Please log in to view your dashboard.</p>
+                <button onClick={() => navigate('/login')}>Go to Login</button>
+            </div>
+        );
+    }
+
     return (
         <div className="dashboard">
             <div className="dashboard-header">
-                <h1>Welcome back, {user?.first_name}!</h1>
-                <p className="user-type">{user?.user_type === 'OWNER' ? 'Property Owner' : 'Property Seeker'}</p>
+                <h1>Welcome back, {user?.username || user?.first_name || 'User'}!</h1>
+                <p className="user-type">{user?.user_type === 'owner' ? 'Property Owner' : 'Property Seeker'}</p>
+                <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', marginTop: '10px' }}>
+                    Logout
+                </button>
             </div>
 
             <div className="dashboard-tabs">
-                <button 
+                <button
                     className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
                     onClick={() => setActiveTab('overview')}
                 >
                     Overview
                 </button>
-                {user?.user_type === 'OWNER' && (
+                {user?.user_type === 'owner' && (
                     <>
-                        <button 
+                        <button
                             className={`tab-btn ${activeTab === 'properties' ? 'active' : ''}`}
                             onClick={() => setActiveTab('properties')}
                         >
                             My Properties
                         </button>
-                        <button 
+                        <button
                             className={`tab-btn ${activeTab === 'rentals' ? 'active' : ''}`}
                             onClick={() => setActiveTab('rentals')}
                         >
@@ -77,15 +114,15 @@ export default function Dashboard() {
                         </button>
                     </>
                 )}
-                {user?.user_type === 'SEEKER' && (
+                {user?.user_type === 'seeker' && (
                     <>
-                        <button 
+                        <button
                             className={`tab-btn ${activeTab === 'bookings' ? 'active' : ''}`}
                             onClick={() => setActiveTab('bookings')}
                         >
                             My Bookings
                         </button>
-                        <button 
+                        <button
                             className={`tab-btn ${activeTab === 'saved' ? 'active' : ''}`}
                             onClick={() => setActiveTab('saved')}
                         >
@@ -93,7 +130,7 @@ export default function Dashboard() {
                         </button>
                     </>
                 )}
-                <button 
+                <button
                     className={`tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
                     onClick={() => setActiveTab('profile')}
                 >
@@ -104,9 +141,8 @@ export default function Dashboard() {
             <div className="dashboard-content">
                 {activeTab === 'overview' && (
                     <div className="overview-tab">
-                        {/* Stats Cards */}
                         <div className="stats-grid">
-                            {user?.user_type === 'OWNER' ? (
+                            {user?.user_type === 'owner' ? (
                                 <>
                                     <div className="stat-card">
                                         <span className="stat-icon">🏠</span>
@@ -116,23 +152,23 @@ export default function Dashboard() {
                                         </div>
                                     </div>
                                     <div className="stat-card">
-                                        <span className="stat-icon">📅</span>
+                                        <span className="stat-icon">📊</span>
                                         <div className="stat-info">
-                                            <h3>3</h3>
+                                            <h3>0</h3>
                                             <p>Active Rentals</p>
                                         </div>
                                     </div>
                                     <div className="stat-card">
                                         <span className="stat-icon">💰</span>
                                         <div className="stat-info">
-                                            <h3>$4,500</h3>
+                                            <h3>$0</h3>
                                             <p>Monthly Revenue</p>
                                         </div>
                                     </div>
                                     <div className="stat-card">
                                         <span className="stat-icon">⭐</span>
                                         <div className="stat-info">
-                                            <h3>4.8</h3>
+                                            <h3>0</h3>
                                             <p>Average Rating</p>
                                         </div>
                                     </div>
@@ -142,28 +178,28 @@ export default function Dashboard() {
                                     <div className="stat-card">
                                         <span className="stat-icon">📅</span>
                                         <div className="stat-info">
-                                            <h3>2</h3>
+                                            <h3>0</h3>
                                             <p>Active Bookings</p>
                                         </div>
                                     </div>
                                     <div className="stat-card">
                                         <span className="stat-icon">❤️</span>
                                         <div className="stat-info">
-                                            <h3>5</h3>
+                                            <h3>0</h3>
                                             <p>Saved Properties</p>
                                         </div>
                                     </div>
                                     <div className="stat-card">
                                         <span className="stat-icon">✍️</span>
                                         <div className="stat-info">
-                                            <h3>3</h3>
+                                            <h3>0</h3>
                                             <p>Reviews Written</p>
                                         </div>
                                     </div>
                                     <div className="stat-card">
-                                        <span className="stat-icon">⭐</span>
+                                        <span className="stat-icon">🌙</span>
                                         <div className="stat-info">
-                                            <h3>12</h3>
+                                            <h3>0</h3>
                                             <p>Total Nights</p>
                                         </div>
                                     </div>
@@ -171,49 +207,17 @@ export default function Dashboard() {
                             )}
                         </div>
 
-                        {/* Recent Activity */}
-                        <div className="recent-activity">
-                            <h2>Recent Activity</h2>
-                            <div className="activity-list">
-                                <div className="activity-item">
-                                    <span className="activity-icon">🏠</span>
-                                    <div className="activity-details">
-                                        <p><strong>New booking</strong> for Beach House</p>
-                                        <span className="activity-time">2 hours ago</span>
-                                    </div>
-                                </div>
-                                <div className="activity-item">
-                                    <span className="activity-icon">⭐</span>
-                                    <div className="activity-details">
-                                        <p><strong>New review</strong> from Michael</p>
-                                        <span className="activity-time">Yesterday</span>
-                                    </div>
-                                </div>
-                                <div className="activity-item">
-                                    <span className="activity-icon">💰</span>
-                                    <div className="activity-details">
-                                        <p><strong>Payment received</strong> $1,200</p>
-                                        <span className="activity-time">2 days ago</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Quick Actions */}
                         <div className="quick-actions">
                             <h2>Quick Actions</h2>
                             <div className="actions-grid">
-                                {user?.user_type === 'OWNER' ? (
+                                {user?.user_type === 'owner' ? (
                                     <>
-                                        <button 
-                                            className="action-card"
-                                            onClick={() => navigate('/property/new')}
-                                        >
+                                        <button className="action-card" onClick={() => navigate('/property/new')}>
                                             <span className="action-icon">➕</span>
                                             <p>Add New Property</p>
                                         </button>
                                         <button className="action-card">
-                                            <span className="action-icon">📅</span>
+                                            <span className="action-icon">📋</span>
                                             <p>Manage Bookings</p>
                                         </button>
                                         <button className="action-card">
@@ -223,10 +227,7 @@ export default function Dashboard() {
                                     </>
                                 ) : (
                                     <>
-                                        <button 
-                                            className="action-card"
-                                            onClick={() => navigate('/property')}
-                                        >
+                                        <button className="action-card" onClick={() => navigate('/properties')}>
                                             <span className="action-icon">🔍</span>
                                             <p>Browse Properties</p>
                                         </button>
@@ -249,14 +250,11 @@ export default function Dashboard() {
                     </div>
                 )}
 
-                {activeTab === 'properties' && user?.user_type === 'OWNER' && (
+                {activeTab === 'properties' && user?.user_type === 'owner' && (
                     <div className="properties-tab">
                         <div className="tab-header">
                             <h2>My Properties</h2>
-                            <button 
-                                className="add-property-btn"
-                                onClick={() => navigate('/property/new')}
-                            >
+                            <button className="add-property-btn" onClick={() => navigate('/property/new')}>
                                 + Add Property
                             </button>
                         </div>
@@ -264,22 +262,14 @@ export default function Dashboard() {
                             {properties.length > 0 ? (
                                 properties.map(property => (
                                     <div key={property.id} className="property-item">
-                                        <img src={property.images?.[0]?.image || '/placeholder.jpg'} alt={property.title} />
                                         <div className="property-info">
                                             <h3>{property.title}</h3>
-                                            <p>{property.city}, {property.state}</p>
-                                            <p className="price">${property.monthly_rent}/month</p>
-                                            <span className={`status ${property.status.toLowerCase()}`}>
-                                                {property.status}
-                                            </span>
+                                            <p>{property.location}</p>
+                                            <p className="price">${property.price}/month</p>
                                         </div>
                                         <div className="property-actions">
-                                            <button onClick={() => navigate(`/property/edit/${property.id}`)}>
-                                                Edit
-                                            </button>
-                                            <button className="view-btn" onClick={() => navigate(`/property/${property.id}`)}>
-                                                View
-                                            </button>
+                                            <button onClick={() => navigate(`/property/edit/${property.id}`)}>Edit</button>
+                                            <button onClick={() => navigate(`/property/${property.id}`)}>View</button>
                                         </div>
                                     </div>
                                 ))
@@ -289,8 +279,6 @@ export default function Dashboard() {
                         </div>
                     </div>
                 )}
-
-                {/* Add other tab content as needed */}
             </div>
         </div>
     );

@@ -1,6 +1,4 @@
-// src/components/ConnectionTest.jsx
 import React, { useState, useEffect } from 'react';
-import { apiService, authService } from '../pages/services';
 
 function ConnectionTest() {
   const [backendStatus, setBackendStatus] = useState('testing');
@@ -13,26 +11,21 @@ function ConnectionTest() {
 
   const testConnection = async () => {
     setBackendStatus('testing');
-    setApiUrl(import.meta.env.VITE_API_URL || 'http://localhost:8000');
+    setApiUrl(import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000');
     
     try {
-      const result = await apiService.checkConnection();
+      const response = await fetch(`${apiUrl}/api/accounts/test/`);
       
-      if (result.connected) {
+      if (response.ok) {
         setBackendStatus('connected');
-        setMessage(`✅ Successfully connected to: ${result.data?.message || 'Backend'}`);
-        
-        const hasToken = authService.isAuthenticated();
-        if (hasToken) {
-          setMessage(prev => prev + ' | User is authenticated');
-        }
+        setMessage('✅ Successfully connected to backend!');
       } else {
         setBackendStatus('failed');
         setMessage('❌ Cannot connect to backend.');
       }
     } catch (error) {
       setBackendStatus('failed');
-      setMessage(`❌ Connection failed: ${error.message || 'Unknown error'}`);
+      setMessage(`❌ Connection failed: ${error.message}`);
     }
   };
 
@@ -45,7 +38,7 @@ function ConnectionTest() {
     }
   };
 
-  // Show in development or when ?debug is in URL
+  // Only show in development
   if (import.meta.env.PROD && !window.location.search.includes('debug')) {
     return null;
   }

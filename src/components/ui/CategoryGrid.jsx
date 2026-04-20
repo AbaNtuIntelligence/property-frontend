@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { categories } from '../../services/propertyService'; // ONLY this line
-import './CategoryGrid.css';
+//import { categories } from '../../services/propertyService'; // ONLY this line
+//import './CategoryGrid.css';
 
 export default function CategoryGrid() {
   const navigate = useNavigate();

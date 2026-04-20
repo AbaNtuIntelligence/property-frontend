@@ -7,7 +7,7 @@ import { mockPosts, mockStories } from '../../data/mockTimelineData';
 import './Timeline.css';
 
 export default function Timeline() {
-  const { user } = useAuth();
+  const { user } = useAuth(); // This will now work with AuthProvider
   const [posts, setPosts] = useState([]);
   const [stories, setStories] = useState([]);
 
@@ -30,7 +30,7 @@ export default function Timeline() {
     const newComment = {
       id: Date.now(),
       user: {
-        name: user?.name || 'Current User',
+        name: user?.name || user?.username || 'Current User',
         avatar: user?.avatar || '/default-avatar.jpg'
       },
       text: comment,

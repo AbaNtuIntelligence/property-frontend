@@ -1,139 +1,112 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import './Login.css';
+import { useNavigate } from 'react-router-dom';
 
-export default function Login() {
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  
-  const { login, register } = useAuth();
+function Login() {
   const navigate = useNavigate();
+  const [formData, setFormData] = useState({ username: '', password: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
-
-    if (!isLogin) {
-      if (password !== confirmPassword) {
-        setError('Passwords do not match');
-        setLoading(false);
-        return;
-      }
-    }
+    setError('');
 
     try {
-      let result;
-      if (isLogin) {
-        result = await login(email, password);
-      } else {
-        result = await register({ name, email, password });
-      }
+      const response = await fetch(`${API_URL}/api/accounts/login/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password
+        }),
+      });
 
-      if (result.success) {
-        navigate('/');
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Store tokens and user data
+        localStorage.setItem('access_token', data.access);
+        localStorage.setItem('refresh_token', data.refresh);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Redirect based on user type
+        if (data.user.user_type === 'owner') {
+          navigate('/dashboard/owner');
+        } else {
+          navigate('/dashboard/seeker');
+        }
       } else {
-        setError(result.error || 'Authentication failed');
+        setError(data.error || 'Login failed');
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      console.error('Login error:', err);
+      setError('Cannot connect to backend. Make sure Django is running on port 8000');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2>{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
-        <p>{isLogin ? 'Sign in to continue' : 'Sign up to get started'}</p>
-
-        {error && <div className="error-message">{error}</div>}
-
-        <form onSubmit={handleSubmit} className="auth-form">
-          {!isLogin && (
-            <div className="form-group">
-              <label>Full Name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                placeholder="Enter your full name"
-              />
-            </div>
-          )}
-
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="Enter your email"
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="Enter your password"
-              minLength={6}
-            />
-          </div>
-
-          {!isLogin && (
-            <div className="form-group">
-              <label>Confirm Password</label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                placeholder="Confirm your password"
-                minLength={6}
-              />
-            </div>
-          )}
-
-          <button 
-            type="submit" 
-            className="auth-button"
-            disabled={loading}
-          >
-            {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
-          </button>
-        </form>
-
-        <div className="auth-switch">
-          {isLogin ? (
-            <p>
-              Don't have an account?{' '}
-              <button onClick={() => setIsLogin(false)}>
-                Sign Up
-              </button>
-            </p>
-          ) : (
-            <p>
-              Already have an account?{' '}
-              <button onClick={() => setIsLogin(true)}>
-                Sign In
-              </button>
-            </p>
-          )}
+    <div style={{ maxWidth: '500px', margin: '50px auto', padding: '20px' }}>
+      <h1>Login</h1>
+      
+      {error && (
+        <div style={{ background: '#f8d7da', color: '#721c24', padding: '10px', borderRadius: '5px', marginBottom: '10px' }}>
+          {error}
         </div>
-      </div>
+      )}
+      
+      <form onSubmit={handleSubmit}>
+        <div>
+          <input
+            type="text"
+            placeholder="Username"
+            value={formData.username}
+            onChange={(e) => setFormData({...formData, username: e.target.value})}
+            required
+            style={{ width: '100%', padding: '8px', margin: '5px 0' }}
+          />
+        </div>
+        
+        <div>
+          <input
+            type="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={(e) => setFormData({...formData, password: e.target.value})}
+            required
+            style={{ width: '100%', padding: '8px', margin: '5px 0' }}
+          />
+        </div>
+        
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            width: '100%',
+            padding: '10px',
+            background: loading ? '#ccc' : '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            marginTop: '10px',
+            cursor: loading ? 'not-allowed' : 'pointer'
+          }}
+        >
+          {loading ? 'Logging in...' : 'Login'}
+        </button>
+      </form>
+      
+      <p style={{ textAlign: 'center', marginTop: '15px' }}>
+        No account? <a href="/register">Register</a>
+      </p>
     </div>
   );
 }
+
+export default Login;

@@ -1,4 +1,3 @@
-// src/pages/services/apiService.js
 import apiClient from './apiClient';
 
 class ApiService {
@@ -20,7 +19,8 @@ class ApiService {
 
   async checkConnection() {
     try {
-      const result = await apiClient.get('/api/test/');
+      // Use an endpoint that actually exists
+      const result = await apiClient.get('/api/accounts/register/');
       console.log('✅ API Connection successful:', result);
       return { connected: true, data: result };
     } catch (error) {

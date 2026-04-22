@@ -12,7 +12,7 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Landing Page - Always shows timeline */}
+          {/* Landing Page - Always visible */}
           <Route path="/" element={<LandingPage />} />
           
           {/* Auth Routes */}
@@ -22,7 +22,7 @@ function App() {
           {/* Property Routes */}
           <Route path="/property/new" element={<CreateProperty />} />
           
-          {/* Dashboard Routes */}
+          {/* Dashboard */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/owner" element={<Dashboard />} />
           <Route path="/dashboard/seeker" element={<Dashboard />} />

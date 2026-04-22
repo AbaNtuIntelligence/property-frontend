@@ -67,10 +67,10 @@ export default function LandingPage() {
           ) : (
             <>
               <span style={{ color: '#333' }}>
-                Welcome, <strong>{user.username}</strong> ({user.user_type === 'owner' ? 'Owner' : 'Seeker'})
+                Welcome, <strong>{user.username}</strong>
               </span>
               <button 
-                onClick={() => navigate(user.user_type === 'owner' ? '/dashboard/owner' : '/dashboard/seeker')}
+                onClick={() => navigate('/dashboard')}
                 style={{
                   padding: '8px 20px',
                   background: '#6c757d',
@@ -100,7 +100,7 @@ export default function LandingPage() {
         </div>
       </div>
       
-      {/* Timeline Component */}
+      {/* Timeline - Always visible */}
       <div style={{ marginTop: '70px' }}>
         <Timeline />
       </div>

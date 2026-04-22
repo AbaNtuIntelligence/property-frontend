@@ -17,17 +17,15 @@ import "./styles/global.css";
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* PUBLIC ROUTES - No authentication needed */}
+      {/* ========== PUBLIC ROUTES - No ProtectedRoute wrapper ========== */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register userType="SEEKER" />} />
       <Route path="/register-owner" element={<Register userType="OWNER" />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
-      
-      {/* Property detail - Public */}
       <Route path="/property/:id" element={<PropertyDetail />} />
       
-      {/* PROTECTED ROUTES - Require authentication (with TimelineLayout) */}
+      {/* ========== PROTECTED ROUTES - Wrapped with ProtectedRoute ========== */}
       <Route path="/properties" element={
         <ProtectedRoute>
           <TimelineLayout />
@@ -52,19 +50,18 @@ export default function AppRoutes() {
         <Route index element={<Dashboard />} />
       </Route>
       
-      {/* Owner only property routes */}
       <Route path="/property/new" element={
         <ProtectedRoute allowedUserTypes={['OWNER', 'ADMIN']}>
           <PropertyForm />
         </ProtectedRoute>
       } />
+      
       <Route path="/property/edit/:id" element={
         <ProtectedRoute allowedUserTypes={['OWNER', 'ADMIN']}>
           <PropertyForm />
         </ProtectedRoute>
       } />
       
-      {/* Booking route */}
       <Route path="/booking/:id" element={
         <ProtectedRoute>
           <BookingPage />

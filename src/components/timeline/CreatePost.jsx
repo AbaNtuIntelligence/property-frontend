@@ -2,64 +2,42 @@ import React, { useState } from 'react';
 import './CreatePost.css';
 
 export default function CreatePost({ onPostCreated, user }) {
-  const [content, setContent] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [postContent, setPostContent] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!content.trim()) return;
-
-    const newPost = {
-      id: Date.now(),
-      user: {
-        name: user?.name || 'Current User',
-        avatar: user?.avatar || '/default-avatar.jpg',
-        isSuperhost: user?.isSuperhost || false
-      },
-      content,
-      createdAt: new Date().toISOString(),
-      likesCount: 0,
-      commentsCount: 0,
-      isLiked: false,
-      isSaved: false,
-      comments: []
-    };
-
-    onPostCreated(newPost);
-    setContent('');
-    setIsOpen(false);
+  const handleSubmit = () => {
+    if (!postContent.trim()) return;
+    // Handle post creation here
+    onPostCreated({ content: postContent });
+    setPostContent('');
+    setShowModal(false);
   };
 
   return (
-    <div className="create-post-section">
-      <div className="create-post-input" onClick={() => setIsOpen(true)}>
-        <img 
-          src={user?.avatar || '/default-avatar.jpg'} 
-          alt={user?.name}
-          className="create-post-avatar"
-        />
-        <input 
-          type="text" 
-          placeholder="Share a property or experience..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          onFocus={() => setIsOpen(true)}
-        />
+    <div className="create-post-card">
+      <div className="create-post-header">
+        <img src={user?.avatar || '/default-avatar.jpg'} alt="Avatar" className="create-post-avatar" />
+        <div className="create-post-input" onClick={() => setShowModal(true)}>
+          What's on your mind?
+        </div>
       </div>
-
-      {isOpen && (
-        <form onSubmit={handleSubmit} className="create-post-form">
-          <textarea
-            placeholder="Tell us about this property..."
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows="3"
-          />
-          <div className="form-actions">
-            <button type="button" onClick={() => setIsOpen(false)}>Cancel</button>
-            <button type="submit" disabled={!content.trim()}>Post</button>
+      
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Create Post</h3>
+            <textarea
+              placeholder="Share something..."
+              value={postContent}
+              onChange={(e) => setPostContent(e.target.value)}
+              rows="4"
+            />
+            <div className="modal-actions">
+              <button onClick={() => setShowModal(false)}>Cancel</button>
+              <button onClick={handleSubmit}>Post</button>
+            </div>
           </div>
-        </form>
+        </div>
       )}
     </div>
   );

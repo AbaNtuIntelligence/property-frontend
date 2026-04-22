@@ -1,104 +1,149 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import TimelinePost from '../../components/timeline/TimelinePost';
-import CreatePost from '../../components/timeline/CreatePost';
-import StoryCircle from '../../components/timeline/StoryCircle';
-import { mockPosts, mockStories } from '../../data/mockTimelineData';
+import ImageSlider from '../../components/timeline/ImageSlider';
 import './Timeline.css';
 
 export default function Timeline() {
-  const { user } = useAuth(); // This will now work with AuthProvider
-  const [posts, setPosts] = useState([]);
-  const [stories, setStories] = useState([]);
+  const { user } = useAuth();
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
   useEffect(() => {
-    setPosts(mockPosts);
-    setStories(mockStories);
+    fetchProperties();
   }, []);
 
-  const handleLike = (postId) => {
-    setPosts(prev => prev.map(post => 
-      post.id === postId 
-        ? { ...post, isLiked: !post.isLiked, likesCount: post.isLiked ? post.likesCount - 1 : post.likesCount + 1 }
-        : post
-    ));
-  };
-
-  const handleComment = (postId, comment) => {
-    if (!comment.trim()) return;
+  const fetchProperties = async () => {
+    setLoading(true);
+    setError('');
     
-    const newComment = {
-      id: Date.now(),
-      user: {
-        name: user?.name || user?.username || 'Current User',
-        avatar: user?.avatar || '/default-avatar.jpg'
-      },
-      text: comment,
-      timestamp: new Date().toISOString()
-    };
-
-    setPosts(prev => prev.map(post => 
-      post.id === postId 
-        ? { 
-            ...post, 
-            comments: [newComment, ...(post.comments || [])], 
-            commentsCount: (post.commentsCount || 0) + 1 
-          }
-        : post
-    ));
+    try {
+      const url = `${API_URL}/api/properties/`;
+      console.log('Fetching from:', url);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Properties loaded:', data);
+      setProperties(data);
+    } catch (err) {
+      console.error('Fetch error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleShare = (postId) => {
-    navigator.clipboard.writeText(`${window.location.origin}/property/${postId}`);
-    alert('Link copied to clipboard!');
-  };
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <div>Loading properties...</div>
+      </div>
+    );
+  }
 
-  const handleSave = (postId) => {
-    setPosts(prev => prev.map(post => 
-      post.id === postId 
-        ? { ...post, isSaved: !post.isSaved }
-        : post
-    ));
-  };
-
-  const handleNewPost = (newPost) => {
-    setPosts(prev => [newPost, ...prev]);
-  };
+  if (error) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <p>❌ Error: {error}</p>
+        <button onClick={fetchProperties}>Retry</button>
+      </div>
+    );
+  }
 
   return (
-    <div className="timeline-container">
-      <div className="stories-section">
-        <div className="stories-wrapper">
-          <StoryCircle 
-            user={user} 
-            isCreate={true}
-            onCreateClick={() => alert('Create story feature coming soon!')}
-          />
-          {stories.map(story => (
-            <StoryCircle 
-              key={story.id} 
-              user={story.user} 
-              hasStory={true}
-              onClick={() => alert('Story viewer coming soon!')}
-            />
-          ))}
+    <div className="timeline-layout">
+      {/* Left Sidebar */}
+      <div className="left-sidebar">
+        <div className="sidebar-card">
+          <h3>Menu</h3>
+          <ul>
+            <li>🏠 Home</li>
+            <li>🔍 Explore</li>
+            <li>📋 Properties</li>
+            <li>❤️ Saved</li>
+          </ul>
+        </div>
+        {user?.user_type === 'owner' && (
+          <div className="sidebar-card">
+            <button 
+              onClick={() => window.location.href = '/property/new'}
+              style={{
+                width: '100%',
+                padding: '10px',
+                background: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer'
+              }}
+            >
+              + List New Property
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Main Timeline Feed */}
+      <div className="timeline-container">
+        <div className="posts-feed">
+          {properties.length === 0 ? (
+            <div className="no-posts">
+              <p>🏠 No properties found.</p>
+              {user?.user_type === 'owner' && (
+                <button onClick={() => window.location.href = '/property/new'}>
+                  List Your First Property
+                </button>
+              )}
+            </div>
+          ) : (
+            properties.map((property) => (
+              <div key={property.id} className="timeline-post">
+                {/* Property Images - Image Slider */}
+                {property.images && property.images.length > 0 && (
+                  <ImageSlider images={property.images} propertyTitle={property.title} />
+                )}
+                
+                <div className="post-header">
+                  <div className="post-owner-info">
+                    <h4>{property.title}</h4>
+                    <span className="post-location">{property.city}, {property.state || ''}</span>
+                  </div>
+                </div>
+                
+                <div className="post-content">
+                  <p className="property-price">💰 ${property.monthly_rent}/month</p>
+                  <p className="property-description">{property.description}</p>
+                  <div className="property-features">
+                    <span>🛏️ {property.bedrooms || 1} beds</span>
+                    <span>🛁 {property.bathrooms || 1} baths</span>
+                    <span>📍 {property.city}</span>
+                  </div>
+                </div>
+                
+                <div className="post-actions">
+                  <button>❤️ Like</button>
+                  <button>💬 Comment</button>
+                  <button>🔗 Share</button>
+                  <button>📖 Save</button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
-      <CreatePost onPostCreated={handleNewPost} user={user} />
-
-      <div className="posts-feed">
-        {posts.map((post) => (
-          <TimelinePost 
-            key={post.id}
-            post={post}
-            onLike={() => handleLike(post.id)}
-            onComment={(comment) => handleComment(post.id, comment)}
-            onShare={() => handleShare(post.id)}
-            onSave={() => handleSave(post.id)}
-            currentUser={user}
-          />
-        ))}
+      {/* Right Sidebar */}
+      <div className="right-sidebar">
+        <div className="sidebar-card">
+          <h3>📊 Statistics</h3>
+          <p>Total Listings: <strong>{properties.length}</strong></p>
+        </div>
       </div>
     </div>
   );

@@ -1,28 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import propertyService from '../services/propertyService';
 import "./Dashboard.css";
-
-
-<button onClick={() => navigate('/property/new')} className="add-property-btn">
-  + Add New Property
-</button>
 
 export default function Dashboard() {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
-    const [properties, setProperties] = useState([]);
-    const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
 
-    // Get user from localStorage on component mount
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             try {
-                const parsedUser = JSON.parse(storedUser);
-                setUser(parsedUser);
+                setUser(JSON.parse(storedUser));
             } catch (error) {
                 console.error('Error parsing user:', error);
             }
@@ -30,255 +20,141 @@ export default function Dashboard() {
         setLoading(false);
     }, []);
 
-    useEffect(() => {
-        if (user) {
-            fetchDashboardData();
-        }
-    }, [user]);
-
-    const fetchDashboardData = async () => {
-        setLoading(true);
-        try {
-            if (user?.user_type === 'owner') {
-                // Fetch owner's properties
-                const props = await propertyService.getPropertiesByOwner(user.id);
-                setProperties(props);
-            } else if (user?.user_type === 'seeker') {
-                // Fetch seeker's bookings/rentals
-                // You'll need to implement this in your service
-                // const bookings = await bookingService.getUserBookings();
-                // setBookings(bookings);
-            }
-        } catch (error) {
-            console.error('Error fetching dashboard data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleLogout = () => {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
-        navigate('/login');
+        localStorage.clear();
+        navigate('/');
     };
 
     if (loading) {
-        return (
-            <div className="dashboard-loading">
-                <div className="loading-spinner"></div>
-                <p>Loading your dashboard...</p>
-            </div>
-        );
+        return <div className="dashboard-loading">Loading dashboard...</div>;
     }
 
     if (!user) {
-        return (
-            <div className="dashboard-error">
-                <p>Please log in to view your dashboard.</p>
-                <button onClick={() => navigate('/login')}>Go to Login</button>
-            </div>
-        );
+        navigate('/login');
+        return null;
     }
 
     return (
         <div className="dashboard">
             <div className="dashboard-header">
-                <h1>Welcome back, {user?.username || user?.first_name || 'User'}!</h1>
-                <p className="user-type">{user?.user_type === 'owner' ? 'Property Owner' : 'Property Seeker'}</p>
-                <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', marginTop: '10px' }}>
-                    Logout
-                </button>
-            </div>
-
-            <div className="dashboard-tabs">
-                <button
-                    className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('overview')}
-                >
-                    Overview
-                </button>
-                {user?.user_type === 'owner' && (
-                    <>
-                        <button
-                            className={`tab-btn ${activeTab === 'properties' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('properties')}
+                <h1>Welcome back, {user.username}!</h1>
+                <p className="user-type">{user.user_type === 'owner' ? '🏠 Property Owner' : '🔍 Property Seeker'}</p>
+                
+                <div className="dashboard-nav" style={{ display: 'flex', gap: '10px', marginTop: '20px', flexWrap: 'wrap' }}>
+                    <button 
+                        onClick={() => navigate('/')}
+                        style={{
+                            padding: '10px 20px',
+                            background: '#007bff',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        🏠 Browse Properties (Timeline)
+                    </button>
+                    
+                    {user.user_type === 'owner' && (
+                        <button 
+                            onClick={() => navigate('/property/new')}
+                            style={{
+                                padding: '10px 20px',
+                                background: '#28a745',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '5px',
+                                cursor: 'pointer'
+                            }}
                         >
-                            My Properties
+                            + List New Property
                         </button>
-                        <button
-                            className={`tab-btn ${activeTab === 'rentals' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('rentals')}
-                        >
-                            Active Rentals
-                        </button>
-                    </>
-                )}
-                {user?.user_type === 'seeker' && (
-                    <>
-                        <button
-                            className={`tab-btn ${activeTab === 'bookings' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('bookings')}
-                        >
-                            My Bookings
-                        </button>
-                        <button
-                            className={`tab-btn ${activeTab === 'saved' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('saved')}
-                        >
-                            Saved Properties
-                        </button>
-                    </>
-                )}
-                <button
-                    className={`tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('profile')}
-                >
-                    Profile
-                </button>
+                    )}
+                    
+                    <button 
+                        onClick={handleLogout}
+                        style={{
+                            padding: '10px 20px',
+                            background: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Logout
+                    </button>
+                </div>
             </div>
 
             <div className="dashboard-content">
-                {activeTab === 'overview' && (
-                    <div className="overview-tab">
-                        <div className="stats-grid">
-                            {user?.user_type === 'owner' ? (
-                                <>
-                                    <div className="stat-card">
-                                        <span className="stat-icon">🏠</span>
-                                        <div className="stat-info">
-                                            <h3>{properties.length}</h3>
-                                            <p>Total Properties</p>
-                                        </div>
-                                    </div>
-                                    <div className="stat-card">
-                                        <span className="stat-icon">📊</span>
-                                        <div className="stat-info">
-                                            <h3>0</h3>
-                                            <p>Active Rentals</p>
-                                        </div>
-                                    </div>
-                                    <div className="stat-card">
-                                        <span className="stat-icon">💰</span>
-                                        <div className="stat-info">
-                                            <h3>$0</h3>
-                                            <p>Monthly Revenue</p>
-                                        </div>
-                                    </div>
-                                    <div className="stat-card">
-                                        <span className="stat-icon">⭐</span>
-                                        <div className="stat-info">
-                                            <h3>0</h3>
-                                            <p>Average Rating</p>
-                                        </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="stat-card">
-                                        <span className="stat-icon">📅</span>
-                                        <div className="stat-info">
-                                            <h3>0</h3>
-                                            <p>Active Bookings</p>
-                                        </div>
-                                    </div>
-                                    <div className="stat-card">
-                                        <span className="stat-icon">❤️</span>
-                                        <div className="stat-info">
-                                            <h3>0</h3>
-                                            <p>Saved Properties</p>
-                                        </div>
-                                    </div>
-                                    <div className="stat-card">
-                                        <span className="stat-icon">✍️</span>
-                                        <div className="stat-info">
-                                            <h3>0</h3>
-                                            <p>Reviews Written</p>
-                                        </div>
-                                    </div>
-                                    <div className="stat-card">
-                                        <span className="stat-icon">🌙</span>
-                                        <div className="stat-info">
-                                            <h3>0</h3>
-                                            <p>Total Nights</p>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                <div className="dashboard-tabs" style={{ display: 'flex', gap: '10px', marginTop: '30px', borderBottom: '1px solid #ddd', paddingBottom: '10px' }}>
+                    <button 
+                        onClick={() => setActiveTab('overview')}
+                        style={{
+                            padding: '8px 16px',
+                            background: activeTab === 'overview' ? '#007bff' : 'transparent',
+                            color: activeTab === 'overview' ? 'white' : '#333',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Overview
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('profile')}
+                        style={{
+                            padding: '8px 16px',
+                            background: activeTab === 'profile' ? '#007bff' : 'transparent',
+                            color: activeTab === 'profile' ? 'white' : '#333',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Profile
+                    </button>
+                </div>
 
-                        <div className="quick-actions">
-                            <h2>Quick Actions</h2>
-                            <div className="actions-grid">
-                                {user?.user_type === 'owner' ? (
-                                    <>
-                                        <button className="action-card" onClick={() => navigate('/property/new')}>
-                                            <span className="action-icon">➕</span>
-                                            <p>Add New Property</p>
-                                        </button>
-                                        <button className="action-card">
-                                            <span className="action-icon">📋</span>
-                                            <p>Manage Bookings</p>
-                                        </button>
-                                        <button className="action-card">
-                                            <span className="action-icon">💰</span>
-                                            <p>View Earnings</p>
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <button className="action-card" onClick={() => navigate('/properties')}>
-                                            <span className="action-icon">🔍</span>
-                                            <p>Browse Properties</p>
-                                        </button>
-                                        <button className="action-card">
-                                            <span className="action-icon">❤️</span>
-                                            <p>Saved Properties</p>
-                                        </button>
-                                        <button className="action-card">
-                                            <span className="action-icon">📅</span>
-                                            <p>My Trips</p>
-                                        </button>
-                                    </>
-                                )}
-                                <button className="action-card">
-                                    <span className="action-icon">👤</span>
-                                    <p>Edit Profile</p>
-                                </button>
+                <div className="dashboard-stats" style={{ marginTop: '30px' }}>
+                    {activeTab === 'overview' && (
+                        <div>
+                            <h2>Dashboard Overview</h2>
+                            <div style={{ 
+                                display: 'grid', 
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+                                gap: '20px',
+                                marginTop: '20px'
+                            }}>
+                                <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '10px' }}>
+                                    <h3>Account Type</h3>
+                                    <p>{user.user_type === 'owner' ? 'Property Owner' : 'Property Seeker'}</p>
+                                </div>
+                                <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '10px' }}>
+                                    <h3>Email</h3>
+                                    <p>{user.email || 'Not provided'}</p>
+                                </div>
+                                <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '10px' }}>
+                                    <h3>Member Since</h3>
+                                    <p>{new Date(user.date_joined || Date.now()).toLocaleDateString()}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {activeTab === 'properties' && user?.user_type === 'owner' && (
-                    <div className="properties-tab">
-                        <div className="tab-header">
-                            <h2>My Properties</h2>
-                            <button className="add-property-btn" onClick={() => navigate('/property/new')}>
-                                + Add Property
-                            </button>
+                    {activeTab === 'profile' && (
+                        <div>
+                            <h2>Profile Information</h2>
+                            <div style={{ marginTop: '20px' }}>
+                                <p><strong>Username:</strong> {user.username}</p>
+                                <p><strong>Email:</strong> {user.email || 'Not provided'}</p>
+                                <p><strong>User Type:</strong> {user.user_type === 'owner' ? 'Property Owner' : 'Property Seeker'}</p>
+                                <p><strong>Phone:</strong> {user.phone_number || 'Not provided'}</p>
+                            </div>
                         </div>
-                        <div className="properties-list">
-                            {properties.length > 0 ? (
-                                properties.map(property => (
-                                    <div key={property.id} className="property-item">
-                                        <div className="property-info">
-                                            <h3>{property.title}</h3>
-                                            <p>{property.location}</p>
-                                            <p className="price">${property.price}/month</p>
-                                        </div>
-                                        <div className="property-actions">
-                                            <button onClick={() => navigate(`/property/edit/${property.id}`)}>Edit</button>
-                                            <button onClick={() => navigate(`/property/${property.id}`)}>View</button>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="no-data">No properties yet. Add your first property!</p>
-                            )}
-                        </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );

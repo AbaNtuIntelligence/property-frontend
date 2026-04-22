@@ -1,6 +1,35 @@
 import { useContext, createContext, useState, useEffect } from 'react';
 import authService from '../pages/services/authService';
 
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
+const login = async (username, password) => {
+  const response = await fetch(`${API_URL}/api/accounts/login/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ username, password }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || 'Login failed');
+  }
+
+  // ✅ Store tokens
+  localStorage.setItem('access_token', data.access);
+  localStorage.setItem('refresh_token', data.refresh);
+  localStorage.setItem('user', JSON.stringify(data.user));
+
+  // ✅ Update global state
+  setUser(data.user);
+
+  return data;
+};
+
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {

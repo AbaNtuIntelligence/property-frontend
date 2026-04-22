@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import ImageSlider from '../../components/timeline/ImageSlider';
 import './Timeline.css';
 
 export default function Timeline() {
+  const { user } = useAuth();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -17,6 +20,8 @@ export default function Timeline() {
     
     try {
       const url = `${API_URL}/api/properties/`;
+      console.log('Fetching from:', url);
+      
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -24,8 +29,10 @@ export default function Timeline() {
       }
       
       const data = await response.json();
+      console.log('Properties loaded:', data);
       setProperties(data);
     } catch (err) {
+      console.error('Fetch error:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -33,7 +40,11 @@ export default function Timeline() {
   };
 
   if (loading) {
-    return <div style={{ textAlign: 'center', padding: '50px' }}>Loading properties...</div>;
+    return (
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <div>Loading properties...</div>
+      </div>
+    );
   }
 
   if (error) {
@@ -46,26 +57,94 @@ export default function Timeline() {
   }
 
   return (
-    <div style={{ maxWidth: '800px', margin: '80px auto 20px', padding: '20px' }}>
-      <h1>Properties for Rent</h1>
-      {properties.length === 0 ? (
-        <p>No properties found.</p>
-      ) : (
-        properties.map(property => (
-          <div key={property.id} style={{
-            border: '1px solid #ddd',
-            borderRadius: '8px',
-            padding: '15px',
-            marginBottom: '15px',
-            background: 'white'
-          }}>
-            <h3>{property.title}</h3>
-            <p>💰 ${property.monthly_rent}/month</p>
-            <p>📍 {property.city}</p>
-            <p>{property.description}</p>
+    <div className="timeline-layout">
+      {/* Left Sidebar */}
+      <div className="left-sidebar">
+        <div className="sidebar-card">
+          <h3>Menu</h3>
+          <ul>
+            <li>🏠 Home</li>
+            <li>🔍 Explore</li>
+            <li>📋 Properties</li>
+            <li>❤️ Saved</li>
+          </ul>
+        </div>
+        {user?.user_type === 'owner' && (
+          <div className="sidebar-card">
+            <button 
+              onClick={() => window.location.href = '/property/new'}
+              style={{
+                width: '100%',
+                padding: '10px',
+                background: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer'
+              }}
+            >
+              + List New Property
+            </button>
           </div>
-        ))
-      )}
+        )}
+      </div>
+
+      {/* Main Timeline Feed */}
+      <div className="timeline-container">
+        <div className="posts-feed">
+          {properties.length === 0 ? (
+            <div className="no-posts">
+              <p>🏠 No properties found.</p>
+              {user?.user_type === 'owner' && (
+                <button onClick={() => window.location.href = '/property/new'}>
+                  List Your First Property
+                </button>
+              )}
+            </div>
+          ) : (
+            properties.map((property) => (
+              <div key={property.id} className="timeline-post">
+                {/* Property Images - Image Slider */}
+                {property.images && property.images.length > 0 && (
+                  <ImageSlider images={property.images} propertyTitle={property.title} />
+                )}
+                
+                <div className="post-header">
+                  <div className="post-owner-info">
+                    <h4>{property.title}</h4>
+                    <span className="post-location">{property.city}, {property.state || ''}</span>
+                  </div>
+                </div>
+                
+                <div className="post-content">
+                  <p className="property-price">💰 ${property.monthly_rent}/month</p>
+                  <p className="property-description">{property.description}</p>
+                  <div className="property-features">
+                    <span>🛏️ {property.bedrooms || 1} beds</span>
+                    <span>🛁 {property.bathrooms || 1} baths</span>
+                    <span>📍 {property.city}</span>
+                  </div>
+                </div>
+                
+                <div className="post-actions">
+                  <button>❤️ Like</button>
+                  <button>💬 Comment</button>
+                  <button>🔗 Share</button>
+                  <button>📖 Save</button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Right Sidebar */}
+      <div className="right-sidebar">
+        <div className="sidebar-card">
+          <h3>📊 Statistics</h3>
+          <p>Total Listings: <strong>{properties.length}</strong></p>
+        </div>
+      </div>
     </div>
   );
 }

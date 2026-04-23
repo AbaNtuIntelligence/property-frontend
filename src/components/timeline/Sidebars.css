@@ -1123,20 +1123,156 @@
 .trending-item:last-child {
     border-bottom: none;
 }
-/* Left Sidebar - Make cards fill properly */
+
+/* Left Sidebar */
+.fb-left-sidebar {
+    flex: 0 0 280px;
+    position: sticky;
+    top: 80px;
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    padding-bottom: 20px;
+}
+
+/* Right Sidebar */
+.fb-right-sidebar {
+    flex: 0 0 320px;
+    position: sticky;
+    top: 80px;
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    padding-bottom: 20px;
+}
+
+/* Custom Scrollbar Styling */
+.fb-left-sidebar::-webkit-scrollbar,
+.fb-right-sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.fb-left-sidebar::-webkit-scrollbar-track,
+.fb-right-sidebar::-webkit-scrollbar-track {
+    background: #e4e6e9;
+    border-radius: 10px;
+}
+
+.fb-left-sidebar::-webkit-scrollbar-thumb,
+.fb-right-sidebar::-webkit-scrollbar-thumb {
+    background: #b0b3b8;
+    border-radius: 10px;
+}
+
+.fb-left-sidebar::-webkit-scrollbar-thumb:hover,
+.fb-right-sidebar::-webkit-scrollbar-thumb:hover {
+    background: #8a8d91;
+}
+
+/* Sidebar Cards Container */
 .left-sidebar,
 .right-sidebar {
-    height: auto;
-    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
-/* Ensure sidebar cards stretch full width */
+/* Ensure sidebar content doesn't overflow */
 .sidebar-card {
-    width: 100%;
-    box-sizing: border-box;
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
 }
 
-/* Last card - no extra margin */
-.sidebar-card:last-child {
-    margin-bottom: 0;
+/* Featured List - Ensure items are properly spaced */
+.featured-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: none;
+}
+
+.featured-item {
+    display: flex;
+    gap: 12px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 12px;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+/* Trending List */
+.trending-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.trending-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 12px;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+/* Menu List */
+.menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.menu-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 8px;
+    text-decoration: none;
+    color: #1a1a1a;
+    border-radius: 10px;
+    transition: background 0.2s;
+}
+
+/* Filters Grid */
+.filters-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.filter-pill {
+    padding: 8px 14px;
+    background: #f0f2f5;
+    border: none;
+    border-radius: 40px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .fb-left-sidebar,
+    .fb-right-sidebar {
+        display: none;
+    }
+}
+
+@media (min-width: 1025px) {
+    .fb-left-sidebar {
+        flex: 0 0 280px;
+    }
+    
+    .fb-right-sidebar {
+        flex: 0 0 320px;
+    }
 }

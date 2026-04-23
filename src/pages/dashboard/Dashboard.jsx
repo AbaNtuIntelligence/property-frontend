@@ -1,38 +1,91 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import './Dashboard.css';
 
-export default function Dashboard() {
+const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
+  const [selectedProperty, setSelectedProperty] = useState(null);
 
-  const handleLogout = () => {
-    logout();
+  useEffect(() => {
+    if (location.state?.selectedProperty) {
+      // Fetch and display the selected property details
+      setSelectedProperty(location.state.selectedProperty);
+    }
+  }, [location]);
+
+  const handleListProperty = () => {
+    navigate('/create-property');
+  };
+
+  const handleExploreProperties = () => {
+    navigate('/timeline');
+  };
+
+  const handleLogout = async () => {
+    await logout();
     navigate('/');
   };
 
   return (
-    <div style={{ padding: '80px 20px 20px', maxWidth: '800px', margin: '0 auto' }}>
-      <h1>Dashboard</h1>
-      <p>Welcome, {user?.username}!</p>
-      <p>You are logged in as a {user?.user_type === 'owner' ? 'Property Owner' : 'Property Seeker'}</p>
-      
-      <div style={{ marginTop: '30px' }}>
-        <h3>Quick Actions</h3>
-        <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', marginTop: '15px' }}>
-          <button onClick={() => navigate('/timeline')} style={{ padding: '12px 24px', cursor: 'pointer', background: '#007bff', color: 'white', border: 'none', borderRadius: '8px' }}>
+    <div className="dashboard-container">
+      <div className="dashboard-header">
+        <h1>Welcome to Your Dashboard, {user?.displayName || user?.email?.split('@')[0]}! 👋</h1>
+        <div className="dashboard-actions">
+          <button onClick={handleExploreProperties} className="btn-explore">
             🔍 Explore Properties
           </button>
-          {user?.user_type === 'owner' && (
-            <button onClick={() => navigate('/property/new')} style={{ padding: '12px 24px', cursor: 'pointer', background: '#28a745', color: 'white', border: 'none', borderRadius: '8px' }}>
-              ➕ List New Property
-            </button>
-          )}
-          <button onClick={handleLogout} style={{ padding: '12px 24px', cursor: 'pointer', background: '#dc3545', color: 'white', border: 'none', borderRadius: '8px' }}>
+          <button onClick={handleListProperty} className="btn-list">
+            📝 List Property
+          </button>
+          <button onClick={handleLogout} className="btn-logout">
             🚪 Logout
           </button>
         </div>
       </div>
+
+      <div className="dashboard-content">
+        {selectedProperty && (
+          <div className="selected-property">
+            <h2>Selected Property Details</h2>
+            <p>Property ID: {selectedProperty}</p>
+          </div>
+        )}
+        
+        <div className="dashboard-grid">
+          <div className="dashboard-card" onClick={handleExploreProperties}>
+            <div className="card-icon">🏠</div>
+            <h3>Explore Properties</h3>
+            <p>Browse through thousands of available properties</p>
+            <button className="card-btn">Start Exploring →</button>
+          </div>
+          
+          <div className="dashboard-card" onClick={handleListProperty}>
+            <div className="card-icon">📝</div>
+            <h3>List Your Property</h3>
+            <p>Reach thousands of potential tenants</p>
+            <button className="card-btn">List Now →</button>
+          </div>
+          
+          <div className="dashboard-card">
+            <div className="card-icon">📊</div>
+            <h3>My Properties</h3>
+            <p>View and manage your listed properties</p>
+            <button className="card-btn">Manage →</button>
+          </div>
+          
+          <div className="dashboard-card">
+            <div className="card-icon">💬</div>
+            <h3>Messages</h3>
+            <p>Communicate with potential renters</p>
+            <button className="card-btn">View Messages →</button>
+          </div>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default Dashboard;

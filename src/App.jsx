@@ -7,6 +7,7 @@ import Login from './pages/login/Login';
 import Register from './pages/register/Register';
 import Dashboard from './pages/dashboard/Dashboard';
 import Timeline from './pages/timeline/Timeline';
+import CreateProperty from './pages/properties/CreateProperty';
 import './App.css';
 
 function App() {
@@ -14,12 +15,12 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* PUBLIC ROUTES - No login required */}
+          {/* PUBLIC ROUTES */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           
-          {/* PROTECTED ROUTES - Login required */}
+          {/* PROTECTED ROUTES */}
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
@@ -30,8 +31,13 @@ function App() {
               <Timeline />
             </ProtectedRoute>
           } />
+          <Route path="/property/new" element={
+            <ProtectedRoute>
+              <CreateProperty />
+            </ProtectedRoute>
+          } />
           
-          {/* REDIRECT - Catch all unknown routes */}
+          {/* CATCH ALL */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </BrowserRouter>

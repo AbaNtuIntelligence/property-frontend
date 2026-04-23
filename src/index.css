@@ -18,6 +18,9 @@
     padding-top: var(--navbar-height);
   }
 
+
+
+  
 body {
   background-color: #f4f6f9;
   color: #1e1e1e;
@@ -123,3 +126,4 @@ code {
   outline: 2px solid #007bff;
   outline-offset: 2px;
 }
+

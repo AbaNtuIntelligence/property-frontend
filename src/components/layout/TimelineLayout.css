@@ -1,481 +1,266 @@
-/* RESET ALL MARGINS AND PADDINGS */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  padding-top: var(--navbar-height);
-}
-
-html, body {
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow-x: hidden;
-  background-color: #f5f5f5;
-}
-
+/* Mobile First Timeline */
 .timeline-layout {
-  min-height: 100vh;
-  background: #f5f5f5;
-  margin-top: 0 !important;
-  padding-top: 0 !important;
-  position: relative;
-  top: 0;
-}
-
-.timeline-layout-container {
-  display: flex;
-  max-width: 1600px;
-  margin: 0 auto; /* Changed from margin: 80px auto 0 */
-  padding: 20px 20px 0; /* Added top padding instead of margin */
-  gap: 20px;
-  min-height: calc(100vh - 80px);
-}
-
-/* ===== MOBILE STYLES - FIXED FOR ZOOM ===== */
-@media (max-width: 768px) {
-  .navbar {
-    min-height: 60px;  /* Keep as min-height, not fixed */
-    height: auto;
-  }
-
-  .nav-container {
-    padding: 10px 16px;
-    gap: 12px;
-  }
-
-  .hamburger {
     display: flex;
-  }
-
-  .nav-links {
-    position: fixed;
-    top: 0;
-    right: -100%;
-    width: 80%;
-    max-width: 320px;
-    height: 100vh;
-    background: white;
     flex-direction: column;
-    align-items: stretch;
-    padding: 80px 20px 30px;
-    gap: 0.5rem;
-    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
-    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1000;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
+    padding: 70px 12px 20px;
+    min-height: 100vh;
+    background: #f0f2f5;
+}
 
-  .nav-links.active {
-    right: 0;
-  }
+/* Sidebars - Hidden on Mobile */
+.left-sidebar, .right-sidebar {
+    display: none;
+}
 
-  /* CRITICAL FIX: Allow nav items to expand vertically when zoomed */
-  .nav-link {
+/* Main Timeline Container */
+.timeline-container {
     width: 100%;
-    padding: 12px 16px;
-    font-size: 1rem;
-    border-radius: 12px;
-    white-space: normal;  /* Allow text to wrap */
-    word-break: break-word;  /* Break long words */
-    line-height: 1.4;  /* Better line height for wrapped text */
-    min-height: 48px;  /* Minimum touch target, but can grow */
-    height: auto;  /* Allow natural height */
+    max-width: 100%;
+}
+
+/* Stories Section - Mobile First */
+.stories-section {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 12px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.stories-wrapper {
+    display: flex;
+    gap: 12px;
+    width: max-content;
+}
+
+.story-circle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.story-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 2px solid #e41e3f;
+    padding: 2px;
+}
+
+.story-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.story-name {
+    font-size: 11px;
+    color: #65676b;
+    max-width: 64px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Create Post - Mobile First */
+.create-post-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.create-post-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-  }
-
-  /* Ensure the icon and text are properly aligned */
-  .nav-icon {
-    font-size: 1.2rem;
-    width: 28px;
-    flex-shrink: 0;
-    line-height: 1;
-  }
-
-  .nav-label {
-    white-space: normal;  /* ALLOW TEXT TO WRAP - This is key for "Stories" */
-    line-height: 1.4;
-    flex: 1;
-  }
-
-  /* Fix for badges */
-  .nav-badge {
-    flex-shrink: 0;
-    align-self: center;
-    margin-left: auto;  /* Push badge to the right */
-  }
-
-  /* User menu fixes */
-  .user-menu {
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-    padding: 1rem 0;
-    border-left: none;
-    border-top: 1px solid #e0e0e0;
-    margin-top: 1rem;
-    gap: 12px;
-  }
-
-  .user-info {
-    padding: 0 16px;
-    width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;  /* Allow wrapping if needed */
-    gap: 8px;
-  }
-
-  .user-name {
-    white-space: normal;  /* Allow name to wrap */
-    word-break: break-word;
-    line-height: 1.4;
-  }
-
-  .logout-btn, .login-btn {
-    width: 100%;
-    justify-content: center;
-    padding: 12px 16px;
-    margin-top: 0;
-    white-space: normal;  /* Allow button text to wrap */
-    min-height: 44px;
-    height: auto;
-  }
-
-  .logout-btn {
-    background: #fee;
-    color: #e31c5f;
-  }
-
-  /* Menu Overlay */
-  .menu-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    animation: fadeIn 0.3s ease;
-  }
-}
-
-/* ===== EXTRA SMALL / ZOOMED IN PROTECTION ===== */
-@media (max-width: 480px) {
-  .nav-container {
-    padding: 8px 12px;
-  }
-
-  .logo-text {
-    display: none;
-  }
-
-  .logo-icon {
-    font-size: 1.8rem;
-  }
-
-  .nav-links {
-    width: 85%;
-    padding: 70px 15px 20px;
-  }
-
-  .nav-link {
-    padding: 10px 12px;
-    font-size: 0.95rem;
-    min-height: 44px;
     gap: 10px;
-  }
-
-  .nav-icon {
-    font-size: 1.1rem;
-    width: 24px;
-  }
-
-  .user-avatar {
-    width: 28px;
-    height: 28px;
-  }
-  
-  .user-name {
-    font-size: 0.85rem;
-  }
 }
 
-/* ===== EXTREME ZOOM PROTECTION (300%+ zoom) ===== */
-@media (max-width: 360px) {
-  .nav-links {
-    padding: 65px 12px 20px;
-  }
-  
-  .nav-link {
-    padding: 8px 10px;
-    font-size: 0.9rem;
-    min-height: 40px;
-    gap: 8px;
-  }
-  
-  .nav-icon {
-    font-size: 1rem;
-    width: 22px;
-  }
-  
-  .nav-label {
-    font-size: 0.9rem;
-  }
-  
-  .user-menu {
-    gap: 8px;
-  }
-  
-  .logout-btn, .login-btn {
-    padding: 10px 12px;
-    font-size: 0.85rem;
-    min-height: 40px;
-  }
-  
-  .user-info {
-    padding: 0 12px;
-  }
-  
-  .user-name {
-    font-size: 0.8rem;
-  }
+.create-post-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
 }
 
-/* ===== LANDSCAPE MODE ON MOBILE ===== */
-@media (max-height: 500px) and (orientation: landscape) {
-  .nav-links {
-    padding: 60px 20px 15px;
-    gap: 0.25rem;
-  }
-  
-  .nav-link {
-    padding: 8px 16px;
-    min-height: 40px;
-  }
-  
-  .user-menu {
-    margin-top: 0.5rem;
-    padding: 0.5rem 0;
-  }
+.create-post-input {
+    flex: 1;
+    background: #f0f2f5;
+    border: none;
+    border-radius: 40px;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
 }
 
-/* Then update the body padding to use the navbar's actual height */
-body {
-  padding-top: 70px;  /* Fallback value */
-  /* Or better yet, use a CSS variable */
-}
-
-@media (max-width: 768px) {
-  .navbar {
-    min-height: 60px;  /* CHANGE: height → min-height */
-    height: auto;
-  }
-  
-  body {
-    padding-top: 60px;
-  }
-}
-
-/* Remove any top margins from main content */
-.timeline-main-content {
-  flex: 1;
-  min-width: 0;
-  max-width: 800px;
-  margin: 0 auto;
-  padding-top: 0; /* Ensure no padding */
-}
-
-/* Remove any potential spacing from first elements */
-.timeline-main-content > *:first-child {
-  margin-top: 0;
-}
-
-/* ... rest of your existing CSS ... */
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .timeline-layout-container {
-    padding: 10px 10px 0; /* Less padding on mobile */
-    margin-top: 0;
-  }
-  
-  .navbar {
-    height: 60px; /* Slightly smaller on mobile */
-  }
-}
-/* Mobile Sidebar Controls */
-.mobile-sidebar-controls {
-  display: none;
-  position: fixed;
-  bottom: 20px;
-  left: 0;
-  right: 0;
-  justify-content: center;
-  gap: 12px;
-  z-index: 999;
-  padding: 0 16px;
-  pointer-events: none;
-}
-
-.mobile-toggle-btn {
-  flex: 1;
-  max-width: 140px;
-  padding: 14px 20px;
-  background: #ff385c;
-  color: white;
-  border: none;
-  border-radius: 40px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  box-shadow: 0 8px 20px rgba(255, 56, 92, 0.3);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  pointer-events: auto;
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.mobile-toggle-btn.left {
-  background: #1e293b;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-}
-
-.mobile-toggle-btn:active {
-  transform: scale(0.95);
-}
-
-.mobile-toggle-btn .btn-icon {
-  font-size: 1.1rem;
-}
-
-/* Mobile Sidebar Drawer */
-.mobile-sidebar-drawer {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  width: 85%;
-  max-width: 340px;
-  background: white;
-  z-index: 1002;
-  transform: translateX(-100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.mobile-sidebar-drawer.open {
-  transform: translateX(0);
-}
-
-/* Right sidebar opens from right */
-.mobile-sidebar-drawer.right {
-  right: 0;
-  left: auto;
-  transform: translateX(100%);
-}
-
-.mobile-sidebar-drawer.right.open {
-  transform: translateX(0);
-}
-
-.mobile-sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px;
-  border-bottom: 1px solid #f0f2f5;
-  position: sticky;
-  top: 0;
-  background: white;
-  z-index: 1;
-}
-
-.mobile-sidebar-header h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #1e293b;
-}
-
-.close-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #f1f5f9;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.close-btn:hover {
-  background: #e2e8f0;
-  transform: rotate(90deg);
-}
-
-.mobile-sidebar-content {
-  padding: 20px;
-}
-
-/* Overlay */
-.sidebar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1001;
-  animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Show mobile controls only on small screens */
-@media (max-width: 768px) {
-  .mobile-sidebar-controls {
+/* Posts Feed */
+.posts-feed {
     display: flex;
-  }
-  
-  .left-sidebar,
-  .right-sidebar {
-    display: none;
-  }
+    flex-direction: column;
+    gap: 12px;
 }
 
-@media (max-width: 480px) {
-  .mobile-toggle-btn {
-    padding: 12px 16px;
-    font-size: 0.9rem;
-  }
-  
-  .mobile-toggle-btn .btn-label {
-    display: none; /* Icons only on very small screens */
-  }
-  
-  .mobile-sidebar-drawer {
-    width: 90%;
-  }
+/* Timeline Post - Mobile First */
+.timeline-post {
+    background: white;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
 }
 
-/* Prevent body scroll when sidebar is open */
-body.sidebar-open {
-  overflow: hidden;
+.post-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
 }
 
+.post-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
 
+.post-owner-info h4 {
+    font-size: 14px;
+    margin: 0;
+}
+
+.post-location, .post-time {
+    font-size: 11px;
+    color: #65676b;
+}
+
+/* Property Details - Mobile First */
+.property-details {
+    padding: 0 12px 12px;
+}
+
+.property-title {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.property-title h3 {
+    font-size: 16px;
+    margin: 0;
+}
+
+.property-price {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--secondary);
+}
+
+.property-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 10px 0;
+    font-size: 12px;
+    color: #65676b;
+}
+
+.property-description {
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 10px 0;
+}
+
+/* Post Images */
+.post-images {
+    max-height: 300px;
+    overflow: hidden;
+}
+
+.post-images img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+/* Post Actions */
+.post-actions {
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 12px;
+    border-top: 1px solid #e4e6e9;
+}
+
+.post-actions button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    padding: 8px;
+    font-size: 13px;
+    color: #65676b;
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+    .timeline-layout {
+        flex-direction: row;
+        gap: 20px;
+        padding: 80px 20px 20px;
+    }
+    
+    .timeline-container {
+        max-width: 680px;
+        margin: 0 auto;
+    }
+    
+    .post-actions button {
+        font-size: 14px;
+    }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+    .left-sidebar, .right-sidebar {
+        display: block;
+        position: sticky;
+        top: 80px;
+        height: fit-content;
+    }
+    
+    .left-sidebar {
+        flex: 0 0 260px;
+    }
+    
+    .right-sidebar {
+        flex: 0 0 300px;
+    }
+    
+    .timeline-container {
+        flex: 1;
+        max-width: 680px;
+    }
+    
+    .story-avatar {
+        width: 68px;
+        height: 68px;
+    }
+    
+    .story-name {
+        font-size: 12px;
+    }
+}
+
+/* Large Desktop */
+@media (min-width: 1280px) {
+    .left-sidebar {
+        flex: 0 0 280px;
+    }
+    
+    .right-sidebar {
+        flex: 0 0 320px;
+    }
+}

@@ -1,22 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
-function Login() {
+export default function Login() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { login } = useAuth();
-
-  const [formData, setFormData] = useState({
-    username: '',
-    password: ''
-  });
-
+  const [formData, setFormData] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // 🔑 Where user was trying to go
-  const from = location.state?.from;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,93 +15,31 @@ function Login() {
     setError('');
 
     try {
-      const data = await login(formData.username, formData.password);
-
-      const userType = data.user?.user_type?.toUpperCase();
-
-      // 🎯 Intent-first redirect
-      if (from) {
-        navigate(from, { replace: true });
-        return;
-      }
-
-      // 🧠 Role-based fallback
-      if (userType === 'OWNER') {
-        navigate('/dashboard', { replace: true });
+      const result = await login(formData.username, formData.password);
+      
+      if (result.success) {
+        // ✅ ALWAYS redirect to dashboard after login
+        navigate('/dashboard');
       } else {
-        navigate('/properties', { replace: true });
+        setError(result.error || 'Login failed');
       }
-
     } catch (err) {
-      console.error('Login error:', err);
-      setError('Invalid credentials or server error');
+      setError('Unable to connect to server');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: '500px', margin: '50px auto', padding: '20px' }}>
+    <div style={{ maxWidth: '400px', margin: '100px auto', padding: '20px' }}>
       <h1>Login</h1>
-
-      {error && (
-        <div style={{
-          background: '#f8d7da',
-          color: '#721c24',
-          padding: '10px',
-          borderRadius: '5px',
-          marginBottom: '10px'
-        }}>
-          {error}
-        </div>
-      )}
-
+      {error && <div style={{ color: 'red' }}>{error}</div>}
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={formData.username}
-          onChange={(e) =>
-            setFormData({ ...formData, username: e.target.value })
-          }
-          required
-          style={{ width: '100%', padding: '8px', margin: '5px 0' }}
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={(e) =>
-            setFormData({ ...formData, password: e.target.value })
-          }
-          required
-          style={{ width: '100%', padding: '8px', margin: '5px 0' }}
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: '100%',
-            padding: '10px',
-            background: loading ? '#ccc' : '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            marginTop: '10px',
-            cursor: loading ? 'not-allowed' : 'pointer'
-          }}
-        >
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
+        <input type="text" placeholder="Username" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} required style={{ width: '100%', padding: '10px', margin: '10px 0' }} />
+        <input type="password" placeholder="Password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} required style={{ width: '100%', padding: '10px', margin: '10px 0' }} />
+        <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px', background: '#007bff', color: 'white', border: 'none' }}>{loading ? 'Logging in...' : 'Login'}</button>
       </form>
-
-      <p style={{ textAlign: 'center', marginTop: '15px' }}>
-        No account? <a href="/register">Register</a>
-      </p>
+      <p>No account? <Link to="/register">Register</Link></p>
     </div>
   );
 }
-
-export default Login;

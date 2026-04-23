@@ -4,10 +4,11 @@ import { useAuth } from '../../hooks/useAuth';
 import './Navbar.css';
 
 export default function Navbar() {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Handle scroll effect
   useEffect(() => {
@@ -18,131 +19,172 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close menu when clicking outside or on link
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (isMenuOpen && !e.target.closest('.nav-container')) {
-        setIsMenuOpen(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [isMenuOpen]);
-
-  // Prevent body scroll when menu is open
-  useEffect(() => {
-    if (isMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isMenuOpen]);
-
   const handleLogout = () => {
     logout();
     navigate('/');
     setIsMenuOpen(false);
   };
 
-  const handleLinkClick = () => {
-    setIsMenuOpen(false);
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery('');
+      setIsMenuOpen(false);
+    }
   };
 
   return (
     <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
       <div className="nav-container">
-        <Link to="/" className="logo" onClick={handleLinkClick}>
+        {/* Logo */}
+        <Link to="/" className="logo" onClick={() => setIsMenuOpen(false)}>
           <span className="logo-icon">🏠</span>
-          <span className="logo-text">PropertyRent</span>
+          <span className="logo-text">Property<span className="logo-highlight">Rental</span></span>
         </Link>
 
-        {/* Hamburger Menu Button */}
-        <button 
-          className={`hamburger ${isMenuOpen ? 'active' : ''}`}
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          <span className="hamburger-line"></span>
-          <span className="hamburger-line"></span>
-          <span className="hamburger-line"></span>
-        </button>
+        {/* Search Bar - Desktop */}
+        <form className="search-bar" onSubmit={handleSearch}>
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search properties, locations..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </form>
 
-        {/* Navigation Links - Desktop & Mobile */}
-        <div className={`nav-links ${isMenuOpen ? 'active' : ''}`}>
-          <Link 
-            to="/properties" 
-            className="nav-link"
-            onClick={handleLinkClick}
-          >
+        {/* Desktop Navigation */}
+        <div className="nav-links-desktop">
+          <Link to="/" className="nav-link">
+            <span className="nav-icon">🏠</span>
+            <span>Home</span>
+          </Link>
+          <Link to="/explore" className="nav-link">
             <span className="nav-icon">🔍</span>
-            <span className="nav-label">Browse Properties</span>
+            <span>Explore</span>
           </Link>
           
-          <Link 
-            to="/timeline" 
-            className="nav-link"
-            onClick={handleLinkClick}
-          >
-            <span className="nav-icon">📱</span>
-            <span className="nav-label">Timeline</span>
-          </Link>
-          
-          {isAuthenticated ? (
+          {user ? (
             <>
-              <Link 
-                to="/wishlist" 
-                className="nav-link"
-                onClick={handleLinkClick}
-              >
-                <span className="nav-icon">❤️</span>
-                <span className="nav-label">Wishlist</span>
-                <span className="nav-badge">12</span>
+              <Link to="/messages" className="nav-link">
+                <span className="nav-icon">💬</span>
+                <span>Messages</span>
+                <span className="notification-badge">3</span>
+              </Link>
+              <Link to="/notifications" className="nav-link">
+                <span className="nav-icon">🔔</span>
+                <span>Notifications</span>
               </Link>
               
-              <Link 
-                to="/dashboard" 
-                className="nav-link"
-                onClick={handleLinkClick}
-              >
-                <span className="nav-icon">📊</span>
-                <span className="nav-label">Dashboard</span>
-              </Link>
-              
+              {/* User Menu Dropdown */}
               <div className="user-menu">
-                <div className="user-info">
-                  <span className="user-avatar">
-                    {user?.avatar ? (
-                      <img src={user.avatar} alt={user.name} />
-                    ) : (
-                      '👤'
-                    )}
-                  </span>
-                  <span className="user-name">Hi, {user?.name || 'User'}</span>
-                </div>
-                <button onClick={handleLogout} className="logout-btn">
-                  <span className="btn-icon">🚪</span>
-                  <span className="btn-label">Logout</span>
+                <button className="user-menu-btn">
+                  <img 
+                    src={user?.avatar || 'https://ui-avatars.com/api/?background=007bff&color=fff&name=' + (user?.username || 'User')} 
+                    alt="Avatar"
+                    className="user-avatar"
+                  />
+                  <span className="user-name">{user?.username}</span>
+                  <span className="dropdown-arrow">▼</span>
                 </button>
+                <div className="user-dropdown">
+                  <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
+                    <span>👤</span> Profile
+                  </Link>
+                  <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>
+                    <span>📊</span> Dashboard
+                  </Link>
+                  {user?.user_type === 'owner' && (
+                    <Link to="/my-listings" onClick={() => setIsMenuOpen(false)}>
+                      <span>🏠</span> My Listings
+                    </Link>
+                  )}
+                  <Link to="/saved" onClick={() => setIsMenuOpen(false)}>
+                    <span>❤️</span> Saved
+                  </Link>
+                  <Link to="/settings" onClick={() => setIsMenuOpen(false)}>
+                    <span>⚙️</span> Settings
+                  </Link>
+                  <hr />
+                  <button onClick={handleLogout} className="dropdown-logout">
+                    <span>🚪</span> Logout
+                  </button>
+                </div>
               </div>
             </>
           ) : (
-            <Link 
-              to="/login" 
-              className="login-btn"
-              onClick={handleLinkClick}
-            >
-              <span className="btn-icon">🔑</span>
-              <span className="btn-label">Sign In</span>
-            </Link>
+            <div className="auth-buttons">
+              <Link to="/login" className="btn-login">Login</Link>
+              <Link to="/register" className="btn-signup">Sign Up</Link>
+            </div>
           )}
         </div>
+
+        {/* Mobile Menu Button */}
+        <button 
+          className={`mobile-menu-btn ${isMenuOpen ? 'active' : ''}`}
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          <span className="menu-line"></span>
+          <span className="menu-line"></span>
+          <span className="menu-line"></span>
+        </button>
       </div>
 
-      {/* Mobile Menu Overlay */}
-      {isMenuOpen && <div className="menu-overlay" onClick={() => setIsMenuOpen(false)} />}
+      {/* Mobile Menu */}
+      <div className={`mobile-menu ${isMenuOpen ? 'active' : ''}`}>
+        {/* Mobile Search */}
+        <form className="mobile-search" onSubmit={handleSearch}>
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search properties..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </form>
+        
+        <Link to="/" onClick={() => setIsMenuOpen(false)}>
+          <span>🏠</span> Home
+        </Link>
+        <Link to="/explore" onClick={() => setIsMenuOpen(false)}>
+          <span>🔍</span> Explore
+        </Link>
+        
+        {user ? (
+          <>
+            <Link to="/messages" onClick={() => setIsMenuOpen(false)}>
+              <span>💬</span> Messages
+              <span className="mobile-badge">3</span>
+            </Link>
+            <Link to="/notifications" onClick={() => setIsMenuOpen(false)}>
+              <span>🔔</span> Notifications
+            </Link>
+            <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
+              <span>👤</span> Profile
+            </Link>
+            <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>
+              <span>📊</span> Dashboard
+            </Link>
+            {user?.user_type === 'owner' && (
+              <Link to="/my-listings" onClick={() => setIsMenuOpen(false)}>
+                <span>🏠</span> My Listings
+              </Link>
+            )}
+            <hr />
+            <button onClick={handleLogout} className="mobile-logout">
+              <span>🚪</span> Logout
+            </button>
+          </>
+        ) : (
+          <div className="mobile-auth">
+            <Link to="/login" className="mobile-login" onClick={() => setIsMenuOpen(false)}>Login</Link>
+            <Link to="/register" className="mobile-signup" onClick={() => setIsMenuOpen(false)}>Sign Up</Link>
+          </div>
+        )}
+      </div>
     </nav>
   );
 }

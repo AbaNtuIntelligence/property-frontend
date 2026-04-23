@@ -1,161 +1,160 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react'; // Combined import
-import { Link } from 'react-router-dom';
-import OptimizedImage from '../ui/OptimizedImage';
+import React, { useState } from 'react';
+import ImageSlider from './ImageSlider';
 import './TimelinePost.css';
-import ImageCarousel from '../ui/ImageCarousel'; // import at top
-
-// Lazy load CommentSection only when needed
-const CommentSection = lazy(() => import('./CommentSection'));
 
 export default function TimelinePost({ post, onLike, onComment, onShare, onSave, currentUser }) {
-  const [showComments, setShowComments] = useState(false);
+  const [showCommentInput, setShowCommentInput] = useState(false);
   const [commentText, setCommentText] = useState('');
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
-  // Debug to see what images we're getting
-  useEffect(() => {
-    console.log('📸 TimelinePost images:', post?.property?.images);
-  }, [post]);
-
-  const handleCommentSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmitComment = () => {
     if (commentText.trim()) {
       onComment(commentText);
       setCommentText('');
+      setShowCommentInput(false);
     }
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return '';
     const date = new Date(dateString);
     const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diff = Math.floor((now - date) / 1000 / 60);
     
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (diff < 1) return 'Just now';
+    if (diff < 60) return `${diff} minutes ago`;
+    if (diff < 1440) return `${Math.floor(diff / 60)} hours ago`;
+    return `${Math.floor(diff / 1440)} days ago`;
   };
+
+  const isProperty = post.type === 'property' || post.price !== undefined;
 
   return (
     <div className="timeline-post">
+      {/* Post Header */}
       <div className="post-header">
-        <div className="post-user">
-          <OptimizedImage 
-            src={post?.user?.avatar || '/default-avatar.jpg'} 
-            alt={post?.user?.name || 'User'}
-            className="user-avatar"
-            width="48"
-            height="48"
-          />
-          <div className="user-info">
-            <Link to={`/host/${post?.user?.id}`} className="user-name">
-              {post?.user?.name || 'Anonymous Host'}
-              {post?.user?.isSuperhost && (
-                <span className="superhost-badge" title="Superhost">⭐</span>
-              )}
-            </Link>
-            <span className="post-time">{formatDate(post?.createdAt)}</span>
-          </div>
+        <img src={post.owner?.avatar || '/default-avatar.jpg'} alt="Owner" className="post-avatar" />
+        <div className="post-owner-info">
+          <h4>{post.owner?.name || 'Property Owner'}</h4>
+          <span className="post-location">{post.location || 'Property Listing'}</span>
+          <span className="post-time"> • {formatDate(post.createdAt)}</span>
         </div>
+        <button className="post-menu-btn">⋮</button>
       </div>
 
-      <div className="post-content">
-        <Link to={`/property/${post?.property?.id}`} className="property-link">
-          <h3 className="property-title">{post?.property?.title || 'Untitled Property'}</h3>
-        </Link>
-        
-        <div className="property-description-container">
-          <p className={`property-description ${isExpanded ? 'expanded' : 'collapsed'}`}>
-            {post?.property?.description || 'No description available.'}
+      {/* Post Content */}
+      {isProperty ? (
+        <div className="property-post">
+          <div className="property-title">
+            <h3>{post.title}</h3>
+            <span className="property-price">${post.price}/month</span>
+          </div>
+          
+          {/* Property Features */}
+          <div className="property-features">
+            <span>🛏️ {post.bedrooms} {post.bedrooms === 1 ? 'bed' : 'beds'}</span>
+            <span>🛁 {post.bathrooms} {post.bathrooms === 1 ? 'bath' : 'baths'}</span>
+            {post.squareFeet && <span>📐 {post.squareFeet} sq ft</span>}
+            <span>📍 {post.location}</span>
+          </div>
+
+          {/* Property Description */}
+          <p className="property-description">
+            {showFullDescription || post.description.length <= 200 
+              ? post.description 
+              : `${post.description.substring(0, 200)}...`}
+            {post.description.length > 200 && (
+              <button className="read-more" onClick={() => setShowFullDescription(!showFullDescription)}>
+                {showFullDescription ? 'See less' : 'See more'}
+              </button>
+            )}
           </p>
-          {post?.property?.description?.length > 150 && (
-            <button 
-              className="read-more-btn"
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
-              {isExpanded ? 'Show less' : '...Read more'}
-            </button>
+
+          {/* Amenities Tags */}
+          {post.amenities && post.amenities.length > 0 && (
+            <div className="amenities-tags">
+              {post.amenities.slice(0, 5).map((amenity, i) => (
+                <span key={i} className="amenity-tag">✓ {amenity}</span>
+              ))}
+              {post.amenities.length > 5 && (
+                <span className="amenity-tag">+{post.amenities.length - 5} more</span>
+              )}
+            </div>
           )}
         </div>
-      </div>
+      ) : (
+        <div className="regular-post">
+          <p>{post.content}</p>
+        </div>
+      )}
 
-      <div className="post-media">
-  {post?.property?.images?.length > 0 ? (
-    <ImageCarousel 
-      images={post.property.images} 
-      propertyId={post.property.id} 
-    />
-  ) : (
-    <OptimizedImage 
-      src="https://via.placeholder.com/680x400?text=No+Image" 
-      alt="No image available"
-      className="property-image"
-      width="680"
-      height="400"
-    />
-  )}
-</div>
+      {/* Images Slider */}
+      {post.images && post.images.length > 0 && (
+        <ImageSlider images={post.images} title={post.title} />
+      )}
 
+      {/* Post Stats */}
       <div className="post-stats">
         <div className="stats-left">
-          <span className="likes-count">❤️ {post?.likesCount || 0}</span>
-          <span className="comments-count">💬 {post?.commentsCount || 0}</span>
+          <span className="likes-count">❤️ {post.likesCount} likes</span>
         </div>
-        {post?.property?.rating && (
-          <div className="stats-right">
-            <span className="rating">
-              ★ {post.property.rating} ({post.property.reviewCount || 0} reviews)
-            </span>
-          </div>
-        )}
+        <div className="stats-right">
+          <span className="comments-count">{post.commentsCount} comments</span>
+          <span className="shares-count">{post.sharesCount} shares</span>
+        </div>
       </div>
 
-      <div className="post-interactions">
-        <button 
-          className={`interaction-btn ${post?.isLiked ? 'active' : ''}`}
-          onClick={onLike}
-        >
-          <span className="btn-icon">{post?.isLiked ? '❤️' : '🤍'}</span>
-          <span className="btn-label">Like</span>
+      {/* Action Buttons */}
+      <div className="post-actions">
+        <button onClick={onLike} className={post.isLiked ? 'liked' : ''}>
+          <span className="action-icon">❤️</span>
+          <span className="action-label">Like</span>
         </button>
-
-        <button 
-          className="interaction-btn"
-          onClick={() => setShowComments(!showComments)}
-        >
-          <span className="btn-icon">💬</span>
-          <span className="btn-label">Comment</span>
+        <button onClick={() => setShowCommentInput(!showCommentInput)}>
+          <span className="action-icon">💬</span>
+          <span className="action-label">Comment</span>
         </button>
-
-        <button 
-          className="interaction-btn"
-          onClick={onShare}
-        >
-          <span className="btn-icon">↗️</span>
-          <span className="btn-label">Share</span>
+        <button onClick={onShare}>
+          <span className="action-icon">🔗</span>
+          <span className="action-label">Share</span>
         </button>
-
-        <button 
-          className={`interaction-btn ${post?.isSaved ? 'active' : ''}`}
-          onClick={onSave}
-        >
-          <span className="btn-icon">{post?.isSaved ? '🔖' : '📑'}</span>
-          <span className="btn-label">Save</span>
+        <button onClick={onSave} className={post.isSaved ? 'saved' : ''}>
+          <span className="action-icon">{post.isSaved ? '📕' : '📖'}</span>
+          <span className="action-label">{post.isSaved ? 'Saved' : 'Save'}</span>
         </button>
       </div>
 
-      {showComments && (
-        <Suspense fallback={<div className="comments-loading">Loading comments...</div>}>
-          <CommentSection 
-            comments={post?.comments || []}
-            onSubmit={handleCommentSubmit}
-            commentText={commentText}
-            setCommentText={setCommentText}
-            currentUser={currentUser}
+      {/* Comment Input */}
+      {showCommentInput && (
+        <div className="comment-input">
+          <img src={currentUser?.avatar || '/default-avatar.jpg'} alt="Your avatar" className="comment-avatar" />
+          <input
+            type="text"
+            placeholder="Write a comment..."
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSubmitComment()}
           />
-        </Suspense>
+          <button onClick={handleSubmitComment}>Post</button>
+        </div>
+      )}
+
+      {/* Comments List */}
+      {post.comments && post.comments.length > 0 && (
+        <div className="comments-list">
+          {post.comments.slice(0, 3).map((comment, i) => (
+            <div key={i} className="comment-item">
+              <img src={comment.user?.avatar || '/default-avatar.jpg'} alt="" className="comment-avatar-small" />
+              <div className="comment-content">
+                <strong>{comment.user?.name}</strong>
+                <p>{comment.text}</p>
+                <span className="comment-time">{formatDate(comment.timestamp)}</span>
+              </div>
+            </div>
+          ))}
+          {post.comments.length > 3 && (
+            <button className="view-more-comments">View all {post.comments.length} comments</button>
+          )}
+        </div>
       )}
     </div>
   );

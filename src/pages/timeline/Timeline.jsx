@@ -245,19 +245,21 @@ const getAvatar = (userData) => {
     <button className="post-menu">⋯</button>
 </div>
 
+     {/* Create Post - Only for Property Owners */}
+{user?.user_type === 'owner' && (
+    <div className="fb-create-post">
         <div className="create-post-header">
-    <img 
-        src={getAvatar(user)} 
-        alt="Avatar" 
-        className="create-post-avatar"
-        onError={(e) => {
-            e.target.src = `https://ui-avatars.com/api/?background=1877f2&color=fff&name=${encodeURIComponent(user?.username || 'User')}`;
-        }}
-    />
-    <div className="create-post-input" onClick={() => alert('Create post coming soon!')}>
-        What's on your mind, {user?.username?.split(' ')[0] || 'Guest'}?
+            <img src={getAvatar(user)} alt="Avatar" className="create-post-avatar" />
+            <div className="create-post-input" onClick={() => window.location.href = '/property/new'}>
+                List your property, {user?.username?.split(' ')[0] || 'Owner'}?
+            </div>
+        </div>
+        <div className="create-post-actions">
+            <button className="create-action" onClick={() => window.location.href = '/property/new'}>📸 Add Photos</button>
+            <button className="create-action" onClick={() => window.location.href = '/property/new'}>📍 Add Location</button>
+        </div>
     </div>
-</div>
+)}
 
                   {/* POST CONTENT */}
                   <div className="post-content">

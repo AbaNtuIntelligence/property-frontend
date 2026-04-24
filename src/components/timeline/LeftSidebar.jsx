@@ -141,6 +141,17 @@ export default function LeftSidebar({ user }) {
         )}
       </div>
 
+{/* Menu Card */}
+<div className="sidebar-card menu-card">
+    <div className="menu-list">
+        <Link to="/timeline" className="menu-link">🏠 Home</Link>
+        <Link to="/properties" className="menu-link">🔍 Explore</Link>
+        {user?.user_type === 'owner' && (
+            <Link to="/property/new" className="menu-link">➕ List Property</Link>
+        )}
+        <Link to="/wishlist" className="menu-link">❤️ Saved</Link>
+    </div>
+</div>
       {/* Quick Menu */}
       <div className="sidebar-card menu-card">
         <div className="section-title">

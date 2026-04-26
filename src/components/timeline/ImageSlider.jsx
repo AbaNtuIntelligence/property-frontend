@@ -1,10 +1,8 @@
-// src/components/timeline/ImageSlider.jsx
 import React, { useState } from 'react';
 import './ImageSlider.css';
 
 export default function ImageSlider({ images, title }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [imgError, setImgError] = useState(false);
   const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
   if (!images || images.length === 0) {
@@ -13,9 +11,16 @@ export default function ImageSlider({ images, title }) {
 
   const getImageUrl = (img) => {
     if (!img) return null;
-    const imgUrl = img.image || img;
+    // Handle different image formats
+    let imgUrl = img.image_url || img.image || img.url || img;
     if (!imgUrl) return null;
-    return imgUrl.startsWith('http') ? imgUrl : `${API_URL}${imgUrl}`;
+    
+    // If it's already an absolute URL, return as is
+    if (imgUrl.startsWith('http')) {
+        return imgUrl;
+    }
+    // Otherwise, prepend the API URL
+    return `${API_URL}${imgUrl}`;
   };
 
   if (images.length === 1) {

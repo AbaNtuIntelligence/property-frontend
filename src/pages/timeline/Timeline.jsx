@@ -81,6 +81,23 @@ export default function Timeline() {
     }
   };
 
+  // Helper function to get image URL - ADD THIS FUNCTION
+  const getImageUrl = (image) => {
+    if (!image) return null;
+    
+    // Get the image URL string (handles both object and string)
+    let imgUrl = typeof image === 'string' ? image : (image.image || image.url);
+    if (!imgUrl) return null;
+    
+    // If it's already an absolute URL, return as is
+    if (imgUrl.startsWith('http')) {
+        return imgUrl;
+    }
+    
+    // Otherwise, prepend the API URL
+    return `${API_URL}${imgUrl}`;
+  };
+
   const getAvatar = (userData) => {
     if (!userData) {
         return `https://ui-avatars.com/api/?background=1877f2&color=fff&name=User`;
@@ -161,28 +178,24 @@ export default function Timeline() {
           </div>
         )}
 
-       {/* Stories Section */}
-<div className="stories-section">
-  <div className="stories-wrapper">
-    <StoryCircle 
-      user={user} 
-      isCreate={true}
-      onCreateClick={() => alert('Create story feature coming soon!')}
-    />
-    {users.filter(u => u.id !== user?.id).slice(0, 12).map((u) => (
-      <StoryCircle 
-        key={u.id}
-        user={{ 
-          name: u.username, 
-          username: u.username, 
-          avatar: u.avatar  // This should be the avatar URL from backend
-        }}
-        hasStory={true}
-        onClick={() => alert(`View ${u.username}'s story coming soon!`)}
-      />
-    ))}
-  </div>
-</div>
+        {/* Stories Section */}
+        <div className="stories-section">
+          <div className="stories-wrapper">
+            <StoryCircle 
+              user={user} 
+              isCreate={true}
+              onCreateClick={() => alert('Create story feature coming soon!')}
+            />
+            {users.filter(u => u.id !== user?.id).slice(0, 12).map((u) => (
+              <StoryCircle 
+                key={u.id}
+                user={{ name: u.username, username: u.username, avatar: u.avatar }}
+                hasStory={true}
+                onClick={() => alert(`View ${u.username}'s story coming soon!`)}
+              />
+            ))}
+          </div>
+        </div>
 
         {/* Filter Tabs */}
         <div className="filter-tabs">
@@ -241,6 +254,7 @@ export default function Timeline() {
                   )}
                 </div>
 
+                {/* Image Slider - USING THE getImageUrl FUNCTION */}
                 {post.hasImages && post.images.length > 0 && (
                   <ImageSlider images={post.images} title={post.title} />
                 )}

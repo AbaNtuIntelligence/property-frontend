@@ -1276,3 +1276,16 @@
         flex: 0 0 320px;
     }
 }
+
+@media (min-width: 1024px) {
+  .timeline-grid {
+    align-items: start;
+  }
+
+  .timeline-left,
+  .timeline-right {
+    height: calc(100dvh - 70px);
+    overflow-y: auto;
+    min-width: 0;
+  }
+}

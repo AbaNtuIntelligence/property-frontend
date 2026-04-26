@@ -1,377 +1,236 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import Navbar from './Navbar';
-import LeftSidebar from '../timeline/LeftSidebar';
-import RightSidebar from '../timeline/RightSidebar';
-import { mockTrending, mockSuggested, mockDestinations } from '../../data/mockTimelineData';
-import './TimelineLayout.css';
+import Navbar from '../../components/layout/Navbar';
+import LeftSidebar from '../../components/timeline/LeftSidebar';
+import RightSidebar from '../../components/timeline/RightSidebar';
+import ImageSlider from '../../components/timeline/ImageSlider';
+import './Timeline.css';
 
-<div className="main-content">
-  <Outlet />
-</div>
+const formatZAR = (amount) =>
+  new Intl.NumberFormat('en-ZA', {
+    style: 'currency',
+    currency: 'ZAR',
+    minimumFractionDigits: 0,
+  }).format(amount);
 
-export default function TimelineLayout() {
+export default function Timeline() {
   const { user } = useAuth();
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [activeSidebar, setActiveSidebar] = useState('left');
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const [isScrolled, setIsScrolled] = useState(false);
 
-  // Handle window resize for responsive adjustments
+  const [posts, setPosts] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState('all');
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
+  /* ---------------- FETCH ---------------- */
+
   useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-      if (window.innerWidth > 768 && isMobileSidebarOpen) {
-        closeMobileSidebar();
-      }
-    };
+    fetchUsers();
+    fetchProperties();
+  }, []);
 
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('scroll', handleScroll);
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleScroll);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isMobileSidebarOpen]);
-
-  // Handle body scroll lock when sidebar is open
-  useEffect(() => {
-    if (isMobileSidebarOpen) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-    } else {
-      document.body.style.overflow = 'unset';
-      document.body.style.position = 'static';
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/accounts/users/`);
+      if (!res.ok) return;
+      setUsers(await res.json());
+    } catch (err) {
+      console.error(err);
     }
-  }, [isMobileSidebarOpen]);
-
-  const toggleMobileSidebar = (sidebar = 'left') => {
-    setActiveSidebar(sidebar);
-    setIsMobileSidebarOpen(!isMobileSidebarOpen);
   };
 
-  const closeMobileSidebar = () => {
-    setIsMobileSidebarOpen(false);
+  const fetchProperties = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/properties/`);
+      if (!res.ok) return;
+
+      const data = await res.json();
+
+      const mapped = data.map((p) => ({
+        id: p.id,
+        title: p.title,
+        description: p.description,
+        price: p.monthly_rent,
+        formattedPrice: formatZAR(p.monthly_rent),
+        bedrooms: p.bedrooms || 1,
+        bathrooms: p.bathrooms || 1,
+        location: p.city,
+        images: p.images || [],
+        hasImages: (p.images || []).length > 0,
+        hasInverter: p.has_inverter || false,
+        createdAt: p.created_at,
+
+        owner: {
+          name: p.owner_username || 'Owner',
+          avatar: p.owner_avatar || null,
+        },
+
+        likesCount: Math.floor(Math.random() * 50),
+        commentsCount: Math.floor(Math.random() * 10),
+        sharesCount: Math.floor(Math.random() * 5),
+        isLiked: false,
+        isSaved: false,
+      }));
+
+      setPosts(mapped);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Determine if we're on mobile/tablet
-  const isMobile = windowWidth <= 768;
-  const isTablet = windowWidth > 768 && windowWidth <= 1024;
+  /* ---------------- HELPERS ---------------- */
+
+  const getAvatar = (u) => {
+    if (!u) return `https://ui-avatars.com/api/?name=User`;
+
+    if (u.avatar) {
+      return u.avatar.startsWith('http') ? u.avatar : `${API_URL}${u.avatar}`;
+    }
+
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      u.name || u.username || 'User'
+    )}`;
+  };
+
+  /* ---------------- FILTERS ---------------- */
+
+  const filteredPosts = posts.filter((p) => {
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'under10k') return p.price < 10000;
+    if (activeFilter === '10k-20k') return p.price <= 20000;
+    if (activeFilter === '20kplus') return p.price > 20000;
+    if (activeFilter === 'inverter') return p.hasInverter;
+    return true;
+  });
+
+  /* ---------------- ACTIONS ---------------- */
+
+  const handleLike = (id) => {
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              isLiked: !p.isLiked,
+              likesCount: p.isLiked ? p.likesCount - 1 : p.likesCount + 1,
+            }
+          : p
+      )
+    );
+  };
+
+  const handleSave = (id) => {
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, isSaved: !p.isSaved } : p
+      )
+    );
+  };
+
+  const handleShare = (id) => {
+    navigator.clipboard.writeText(`${window.location.origin}/property/${id}`);
+  };
+
+  /* ---------------- LOADING ---------------- */
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="timeline-loading">
+          <div className="spinner" />
+          <p>Loading feed...</p>
+        </div>
+      </>
+    );
+  }
+
+  /* ---------------- UI ---------------- */
 
   return (
-    <div className={`timeline-layout ${isScrolled ? 'scrolled' : ''}`}>
+    <>
       <Navbar />
-      
-      <div className="timeline-layout-container">
-        {/* Left Sidebar - Desktop/Tablet */}
-        {!isMobile && (
-          <LeftSidebar>
-            {/* Profile Card - WITH NULL CHECKS */}
-            {user && (
-              <div className="sidebar-card profile-card">
-                <div className="profile-content">
-                  <img 
-                    src={user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&auto=format&q=80'} 
-                    alt={user?.name || 'User'}
-                    className="profile-avatar"
-                    loading="lazy"
-                  />
-                  <div className="profile-info">
-                    <h4>{user?.name || 'Guest User'}</h4>
-                    <p>📍 {user?.location || 'South Africa'}</p>
+
+      {/* APPIC WRAPPER (CENTERS EVERYTHING) */}
+      <div className="timeline-shell">
+
+        {/* LEFT SIDEBAR (desktop only via CSS) */}
+        <aside className="sidebar left">
+          <LeftSidebar user={user} />
+        </aside>
+
+        {/* MAIN FEED */}
+        <main className="feed">
+
+          {/* CREATE POST (mobile-first top card) */}
+          {user?.user_type === 'owner' && (
+            <div className="create-card">
+              <img src={getAvatar(user)} alt="" />
+              <input
+                placeholder={`List your property, ${user?.username || 'Owner'}?`}
+                readOnly
+              />
+            </div>
+          )}
+
+          {/* FILTERS */}
+          <div className="filters">
+            {['all', 'under10k', '10k-20k', '20kplus', 'inverter'].map((f) => (
+              <button
+                key={f}
+                className={activeFilter === f ? 'active' : ''}
+                onClick={() => setActiveFilter(f)}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+
+          {/* FEED */}
+          <div className="posts">
+            {filteredPosts.map((p) => (
+              <article key={p.id} className="post">
+
+                <header className="post-header">
+                  <img src={getAvatar(p.owner)} alt="" />
+                  <div>
+                    <strong>{p.owner.name}</strong>
+                    <small>{p.location}</small>
                   </div>
+                </header>
+
+                <div className="post-body">
+                  <h3>{p.title}</h3>
+                  <p>{p.description?.slice(0, 140)}...</p>
+
+                  <div className="price">{p.formattedPrice}/month</div>
                 </div>
-                <div className="profile-stats">
-                  <div className="stat">
-                    <span className="stat-value">128</span>
-                    <span className="stat-label">Stays</span>
-                  </div>
-                  <div className="stat">
-                    <span className="stat-value">24</span>
-                    <span className="stat-label">Reviews</span>
-                  </div>
-                  <div className="stat">
-                    <span className="stat-value">4.8</span>
-                    <span className="stat-label">Rating</span>
-                  </div>
-                </div>
-              </div>
-            )}
 
-            {/* Rest of your left sidebar remains the same */}
-            {/* Main Navigation Menu */}
-            <div className="sidebar-card">
-              <div className="sidebar-card-header">
-                <h3><span>📋</span> Menu</h3>
-              </div>
-              <nav className="sidebar-menu">
-                <Link to="/" className="menu-item active" onClick={closeMobileSidebar}>
-                  <span className="menu-icon">🏠</span>
-                  <span className="menu-label">Home</span>
-                </Link>
-                <Link to="/properties" className="menu-item" onClick={closeMobileSidebar}>
-                  <span className="menu-icon">🔍</span>
-                  <span className="menu-label">Explore</span>
-                </Link>
-                <Link to="/wishlist" className="menu-item" onClick={closeMobileSidebar}>
-                  <span className="menu-icon">❤️</span>
-                  <span className="menu-label">Wishlist</span>
-                  <span className="menu-badge">12</span>
-                </Link>
-                <Link to="/dashboard" className="menu-item" onClick={closeMobileSidebar}>
-                  <span className="menu-icon">📊</span>
-                  <span className="menu-label">Dashboard</span>
-                </Link>
-              </nav>
-            </div>
+                {p.hasImages && (
+                  <ImageSlider images={p.images} />
+                )}
 
-            {/* Filters Card */}
-            <div className="sidebar-card">
-              <div className="sidebar-card-header">
-                <h3><span>🔧</span> Quick Filters</h3>
-                <Link to="/properties" className="see-all">Reset</Link>
-              </div>
-              <div className="filter-options">
-                <label className="filter-option">
-                  <input type="checkbox" /> Pet Friendly 🐾
-                </label>
-                <label className="filter-option">
-                  <input type="checkbox" /> Pool 🏊
-                </label>
-                <label className="filter-option">
-                  <input type="checkbox" /> Backup Power ⚡
-                </label>
-                <label className="filter-option">
-                  <input type="checkbox" /> Braai Area 🍖
-                </label>
-              </div>
-            </div>
+                <footer className="post-actions">
+                  <button onClick={() => handleLike(p.id)}>Like</button>
+                  <button>Comment</button>
+                  <button onClick={() => handleShare(p.id)}>Share</button>
+                  <button onClick={() => handleSave(p.id)}>Save</button>
+                </footer>
 
-            {/* Load Shedding Tip */}
-            <div className="load-shedding-tip">
-              ⚡ Stage 2 loadshedding today 16:00-20:00
-            </div>
-          </LeftSidebar>
-        )}
-
-        {/* Main Content */}
-        <main className={`timeline-main-content ${isTablet ? 'tablet' : ''} ${isMobile ? 'mobile' : ''}`}>
-          <Outlet />
+              </article>
+            ))}
+          </div>
         </main>
 
-        {/* Right Sidebar - Desktop only */}
-        {!isMobile && !isTablet && (
-          <RightSidebar>
-            {/* Trending Now Card */}
-            <div className="sidebar-card">
-              <div className="sidebar-card-header">
-                <h3><span>🔥</span> Trending in SA</h3>
-                <Link to="/trending" className="see-all">View All</Link>
-              </div>
-              <div className="trending-list">
-                {mockTrending.map((item, index) => (
-                  <Link key={item.id} to={`/property/${item.id}`} className="trending-item">
-                    <span className="trending-rank">#{index + 1}</span>
-                    <img src={item.image} alt={item.title} className="trending-image" loading="lazy" />
-                    <div className="trending-info">
-                      <h4>{item.title}</h4>
-                      <div className="trending-location">
-                        <span>📍</span> {item.location}
-                      </div>
-                      <div className="trending-meta">
-                        <span className="trending-price">{item.price}</span>
-                        <span className="trending-score">🔥 {item.score}</span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
+        {/* RIGHT SIDEBAR */}
+        <aside className="sidebar right">
+          <RightSidebar user={user} />
+        </aside>
 
-            {/* Top Hosts Card */}
-            <div className="sidebar-card">
-              <div className="sidebar-card-header">
-                <h3><span>⭐</span> Top Hosts</h3>
-                <Link to="/hosts" className="see-all">See All</Link>
-              </div>
-              <div className="suggested-list">
-                {mockSuggested.map(host => (
-                  <div key={host.id} className="suggested-item">
-                    <img src={host.avatar} alt={host.name} className="suggested-avatar" loading="lazy" />
-                    <div className="suggested-info">
-                      <h4>{host.name}</h4>
-                      <div className="suggested-badge">
-                        <span>📍 {host.location}</span>
-                        {host.properties > 5 && (
-                          <span className="superhost-badge">Superhost</span>
-                        )}
-                      </div>
-                    </div>
-                    <button className="follow-btn">Follow</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Ad Card */}
-            <div className="sidebar-card ad-card">
-              <div className="ad-badge">Sponsored</div>
-              <div className="ad-content">
-                <span className="ad-label">Special Offer</span>
-                <h4>List your property</h4>
-                <p>Reach millions of travelers in 2026</p>
-                <button className="ad-button">Become a Host →</button>
-              </div>
-            </div>
-
-            {/* Popular Destinations Card */}
-            <div className="sidebar-card">
-              <div className="sidebar-card-header">
-                <h3><span>🌍</span> Destinations</h3>
-                <Link to="/destinations" className="see-all">All</Link>
-              </div>
-              <div className="destinations-grid">
-                {mockDestinations.map(dest => (
-                  <Link key={dest.city} to={`/search?location=${dest.city}`} className="destination-item">
-                    <div className="destination-flag">{dest.flag}</div>
-                    <div className="destination-city">{dest.city}</div>
-                    <div className="destination-count">{dest.count} stays</div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </RightSidebar>
-        )}
       </div>
-
-      {/* Mobile Sidebar Controls */}
-      {isMobile && (
-        <div className="mobile-sidebar-controls">
-          <button 
-            className="mobile-toggle-btn left"
-            onClick={() => toggleMobileSidebar('left')}
-          >
-            <span className="btn-icon">🔍</span>
-            <span className="btn-label">Filters</span>
-          </button>
-          <button 
-            className="mobile-toggle-btn right"
-            onClick={() => toggleMobileSidebar('right')}
-          >
-            <span className="btn-icon">⭐</span>
-            <span className="btn-label">Featured</span>
-          </button>
-        </div>
-      )}
-
-      {/* Mobile Sidebar Drawer - WITH NULL CHECKS */}
-      <div className={`mobile-sidebar-drawer ${isMobileSidebarOpen ? 'open' : ''} ${activeSidebar}`}>
-        <div className="mobile-sidebar-header">
-          <h3>{activeSidebar === 'left' ? 'Filters & Menu' : 'Featured & Trends'}</h3>
-          <button className="close-btn" onClick={closeMobileSidebar}>✕</button>
-        </div>
-        <div className="mobile-sidebar-content">
-          {activeSidebar === 'left' ? (
-            /* Mobile Left Sidebar Content - WITH NULL CHECKS */
-            <>
-              {user && (
-                <div className="sidebar-card profile-card">
-                  <div className="profile-content">
-                    <img 
-                      src={user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&auto=format&q=80'} 
-                      alt={user?.name || 'User'}
-                      className="profile-avatar"
-                      loading="lazy"
-                    />
-                    <div className="profile-info">
-                      <h4>{user?.name || 'Guest User'}</h4>
-                      <p>📍 {user?.location || 'South Africa'}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <nav className="sidebar-menu">
-                <Link to="/" className="menu-item active" onClick={closeMobileSidebar}>
-                  <span className="menu-icon">🏠</span>
-                  <span className="menu-label">Home</span>
-                </Link>
-                <Link to="/properties" className="menu-item" onClick={closeMobileSidebar}>
-                  <span className="menu-icon">🔍</span>
-                  <span className="menu-label">Explore</span>
-                </Link>
-                <Link to="/wishlist" className="menu-item" onClick={closeMobileSidebar}>
-                  <span className="menu-icon">❤️</span>
-                  <span className="menu-label">Wishlist</span>
-                </Link>
-              </nav>
-              <div className="filter-options">
-                <h4>Quick Filters</h4>
-                <label className="filter-option">
-                  <input type="checkbox" /> Pet Friendly 🐾
-                </label>
-                <label className="filter-option">
-                  <input type="checkbox" /> Pool 🏊
-                </label>
-                <label className="filter-option">
-                  <input type="checkbox" /> Backup Power ⚡
-                </label>
-              </div>
-            </>
-          ) : (
-            /* Mobile Right Sidebar Content */
-            <>
-              <div className="sidebar-card">
-                <h4>🔥 Trending Now</h4>
-                {mockTrending.slice(0, 3).map(item => (
-                  <Link key={item.id} to={`/property/${item.id}`} className="trending-item">
-                    <img src={item.image} alt={item.title} className="trending-image" loading="lazy" />
-                    <div className="trending-info">
-                      <h4>{item.title}</h4>
-                      <p>{item.location}</p>
-                      <span className="trending-price">{item.price}</span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-              
-              <div className="sidebar-card">
-                <h4>⭐ Top Hosts</h4>
-                {mockSuggested.slice(0, 3).map(host => (
-                  <div key={host.id} className="suggested-item">
-                    <img src={host.avatar} alt={host.name} className="suggested-avatar" loading="lazy" />
-                    <div className="suggested-info">
-                      <h4>{host.name}</h4>
-                      <p>{host.location}</p>
-                    </div>
-                    <button className="follow-btn">Follow</button>
-                  </div>
-                ))}
-              </div>
-
-              <div className="sidebar-card ad-card">
-                <div className="ad-content">
-                  <h4>List your property</h4>
-                  <p>Reach millions in 2026</p>
-                  <button className="ad-button">Learn More</button>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Overlay when mobile sidebar is open */}
-      {isMobileSidebarOpen && (
-        <div className="sidebar-overlay" onClick={closeMobileSidebar} />
-      )}
-    </div>
+    </>
   );
 }

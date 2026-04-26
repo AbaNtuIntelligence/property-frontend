@@ -80,3 +80,17 @@
     font-size: 0.7rem;
   }
 }
+
+.stories-wrapper {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  max-width: 100%;
+  scrollbar-width: none;
+}
+
+.stories-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+

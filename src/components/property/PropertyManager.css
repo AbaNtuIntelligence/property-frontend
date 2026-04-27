@@ -327,3 +327,54 @@
     }
 }
 
+/* WhatsApp Contact Button */
+.whatsapp-cell {
+    text-align: center;
+}
+
+.whatsapp-contact-btn {
+    background: #25D366;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.whatsapp-contact-btn:hover {
+    background: #128C7E;
+    transform: scale(1.02);
+}
+
+.no-whatsapp {
+    color: #999;
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+/* Adjust table column widths */
+.properties-table th:first-child,
+.properties-table td:first-child {
+    width: 60px;
+}
+
+.properties-table .whatsapp-cell {
+    width: 130px;
+}
+
+.properties-table .action-buttons {
+    width: 100px;
+}
+
+.property-title-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

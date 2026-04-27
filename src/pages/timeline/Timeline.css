@@ -305,3 +305,134 @@
     display: block;
     margin-bottom: 16px;
 }
+/* Add to Timeline.css */
+
+.room-dimensions-section {
+  background: #f8fafc;
+  border-radius: 12px;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.dimensions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: #f1f5f9;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.dimensions-header:hover {
+  background: #e2e8f0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dimensions-icon {
+  font-size: 1.2rem;
+}
+
+.dimensions-header h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.total-area {
+  font-size: 0.8rem;
+  color: #2d6a4f;
+  font-weight: 600;
+  background: #e8f5e9;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+}
+
+.expand-btn {
+  background: transparent;
+  border: none;
+  font-size: 0.8rem;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.expand-btn:hover {
+  background: #e2e8f0;
+}
+
+.dimensions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.dimension-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.dimension-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-color: #2d6a4f;
+}
+
+.dimension-icon {
+  font-size: 1.5rem;
+}
+
+.dimension-details {
+  flex: 1;
+}
+
+.room-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.25rem;
+}
+
+.room-size {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.room-area {
+  margin-left: 0.5rem;
+  color: #2d6a4f;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .dimensions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dimensions-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .total-area {
+    order: 3;
+    width: 100%;
+    text-align: center;
+  }
+}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import './PropertyManager.css';
 
@@ -11,6 +12,7 @@ const formatZAR = (amount) => {
 };
 
 export default function PropertyManager() {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -37,7 +39,8 @@ export default function PropertyManager() {
         parking: false,
         has_inverter: false,
         has_jojo_tank: false,
-        status: 'available'
+        status: 'available',
+        whatsapp_number: '' // ADDED: WhatsApp number field
     });
 
     const [newImages, setNewImages] = useState([]);
@@ -70,7 +73,7 @@ export default function PropertyManager() {
     };
 
     const handleListProperty = () => {
-        window.location.href = '/property/new';
+        navigate('/property/new');
     };
 
     const handleEdit = (property) => {
@@ -91,7 +94,8 @@ export default function PropertyManager() {
             parking: property.parking || false,
             has_inverter: property.has_inverter || false,
             has_jojo_tank: property.has_jojo_tank || false,
-            status: property.status || 'available'
+            status: property.status || 'available',
+            whatsapp_number: property.whatsapp_number || '' // ADDED
         });
         setNewImages([]);
         setImagePreviews([]);
@@ -207,6 +211,26 @@ export default function PropertyManager() {
         }
     };
 
+    // WhatsApp contact function
+    const handleWhatsAppContact = (whatsappNumber, propertyTitle) => {
+        if (!whatsappNumber) {
+            alert('No WhatsApp number provided for this property owner.');
+            return;
+        }
+        
+        // Format WhatsApp number (remove spaces, ensure correct format)
+        let formattedNumber = whatsappNumber.replace(/\s/g, '');
+        if (formattedNumber.startsWith('0')) {
+            formattedNumber = '27' + formattedNumber.substring(1);
+        }
+        if (!formattedNumber.startsWith('27')) {
+            formattedNumber = '27' + formattedNumber;
+        }
+        
+        const message = encodeURIComponent(`Hi! I'm interested in your property: ${propertyTitle}. Is it still available?`);
+        window.open(`https://wa.me/${formattedNumber}?text=${message}`, '_blank');
+    };
+
     if (loading && properties.length === 0) {
         return <div className="property-manager-loading">Loading your properties...</div>;
     }
@@ -242,6 +266,7 @@ export default function PropertyManager() {
                                     <th>Price</th>
                                     <th>Location</th>
                                     <th>Status</th>
+                                    <th>WhatsApp</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -255,13 +280,25 @@ export default function PropertyManager() {
                                                 <div className="no-image-placeholder-small">🏠</div>
                                             )}
                                         </td>
-                                        <td>{property.title}</td>
+                                        <td className="property-title-cell">{property.title}</td>
                                         <td>{formatZAR(property.monthly_rent)}</td>
                                         <td>{property.city}</td>
                                         <td>
                                             <span className={`status-badge ${property.status}`}>
                                                 {property.status}
                                             </span>
+                                        </td>
+                                        <td className="whatsapp-cell">
+                                            {property.whatsapp_number ? (
+                                                <button 
+                                                    className="whatsapp-contact-btn"
+                                                    onClick={() => handleWhatsAppContact(property.whatsapp_number, property.title)}
+                                                >
+                                                    📱 Contact Owner
+                                                </button>
+                                            ) : (
+                                                <span className="no-whatsapp">Not provided</span>
+                                            )}
                                         </td>
                                         <td className="action-buttons">
                                             <button className="edit-btn" onClick={() => handleEdit(property)}>
@@ -349,6 +386,19 @@ export default function PropertyManager() {
                                         <option value="rented">Rented</option>
                                         <option value="maintenance">Under Maintenance</option>
                                     </select>
+                                </div>
+
+                                {/* WhatsApp Number Field - ADDED */}
+                                <div className="form-group">
+                                    <label>WhatsApp Number (for renters to contact you)</label>
+                                    <input 
+                                        type="tel" 
+                                        name="whatsapp_number" 
+                                        value={formData.whatsapp_number} 
+                                        onChange={handleFormChange}
+                                        placeholder="e.g., 0712345678 or +27712345678"
+                                    />
+                                    <small>This number will be visible to potential renters so they can contact you directly via WhatsApp.</small>
                                 </div>
 
                                 <div className="form-group">

@@ -1,3 +1,4 @@
+// src/pages/properties/CreateProperty.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -12,6 +13,14 @@ export default function CreateProperty() {
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   
+  // Helper function to calculate area
+  const calculateArea = (length, width) => {
+    if (length && width) {
+      return (parseFloat(length) * parseFloat(width)).toFixed(1);
+    }
+    return '0';
+  };
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -21,7 +30,7 @@ export default function CreateProperty() {
     monthly_rent: '',
     address: '',
     city: '',
-    zip_code: '',  // ZIP CODE ADDED HERE
+    zip_code: '',
     state: '',
     amenities: [],
     pet_friendly: false,
@@ -29,7 +38,17 @@ export default function CreateProperty() {
     parking: false,
     has_inverter: false,
     has_jojo_tank: false,
-    parking_type: 'off_street'
+    parking_type: 'off_street',
+    room_dimensions: {
+      living_room: { length: '', width: '' },
+      master_bedroom: { length: '', width: '' },
+      bedroom_2: { length: '', width: '' },
+      bedroom_3: { length: '', width: '' },
+      kitchen: { length: '', width: '' },
+      dining_room: { length: '', width: '' },
+      study: { length: '', width: '' }
+    },
+    total_area: ''
   });
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
@@ -39,6 +58,20 @@ export default function CreateProperty() {
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  // ONLY ONE declaration of handleRoomDimensionChange - KEEP THIS ONE
+  const handleRoomDimensionChange = (room, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      room_dimensions: {
+        ...prev.room_dimensions,
+        [room]: {
+          ...prev.room_dimensions[room],
+          [field]: value
+        }
+      }
     }));
   };
 
@@ -92,6 +125,14 @@ export default function CreateProperty() {
         return;
       }
 
+      // Filter out empty room dimensions
+      const filteredRoomDimensions = {};
+      Object.entries(formData.room_dimensions).forEach(([room, dims]) => {
+        if (dims.length && dims.width) {
+          filteredRoomDimensions[room] = dims;
+        }
+      });
+
       const propertyData = {
         title: formData.title,
         description: formData.description,
@@ -101,7 +142,7 @@ export default function CreateProperty() {
         monthly_rent: parseFloat(formData.monthly_rent),
         address: formData.address,
         city: formData.city,
-        zip_code: formData.zip_code,  // ZIP CODE INCLUDED HERE
+        zip_code: formData.zip_code,
         state: formData.state,
         amenities: formData.amenities,
         pet_friendly: formData.pet_friendly,
@@ -109,7 +150,9 @@ export default function CreateProperty() {
         parking: formData.parking,
         has_inverter: formData.has_inverter,
         has_jojo_tank: formData.has_jojo_tank,
-        parking_type: formData.parking_type
+        parking_type: formData.parking_type,
+        room_dimensions: Object.keys(filteredRoomDimensions).length > 0 ? filteredRoomDimensions : null,
+        total_area: formData.total_area || null
       };
 
       const response = await fetch(`${API_URL}/api/properties/create/`, {
@@ -155,6 +198,17 @@ export default function CreateProperty() {
       setLoading(false);
     }
   };
+
+  // Room configurations for display
+  const rooms = [
+    { id: 'living_room', label: '🛋️ Living Room' },
+    { id: 'master_bedroom', label: '👑 Master Bedroom' },
+    { id: 'bedroom_2', label: '🛏️ Bedroom 2' },
+    { id: 'bedroom_3', label: '🛏️ Bedroom 3' },
+    { id: 'kitchen', label: '🍳 Kitchen' },
+    { id: 'dining_room', label: '🍽️ Dining Room' },
+    { id: 'study', label: '📚 Study/Office' }
+  ];
 
   return (
     <div className="create-property-container">
@@ -258,9 +312,8 @@ export default function CreateProperty() {
                 />
               </div>
 
-              {/* ZIP CODE FIELD - ADDED HERE */}
               <div className="form-group">
-                <label>ZIP / Postal Code</label>
+                <label>Postal Code</label>
                 <input
                   type="text"
                   name="zip_code"
@@ -326,6 +379,55 @@ export default function CreateProperty() {
             </div>
           </div>
 
+          {/* ROOM DIMENSIONS SECTION */}
+          <div className="form-section">
+            <h3>📐 Room Dimensions (Optional)</h3>
+            <p className="section-hint">Add dimensions to help renters understand the space</p>
+            
+            <div className="room-dimensions-grid">
+              {rooms.map(room => (
+                <div key={room.id} className="room-card">
+                  <h4>{room.label}</h4>
+                  <div className="dimension-inputs">
+                    <input
+                      type="number"
+                      placeholder="Length (m)"
+                      value={formData.room_dimensions[room.id]?.length || ''}
+                      onChange={(e) => handleRoomDimensionChange(room.id, 'length', e.target.value)}
+                      step="0.1"
+                    />
+                    <span>×</span>
+                    <input
+                      type="number"
+                      placeholder="Width (m)"
+                      value={formData.room_dimensions[room.id]?.width || ''}
+                      onChange={(e) => handleRoomDimensionChange(room.id, 'width', e.target.value)}
+                      step="0.1"
+                    />
+                    <span className="area-calc">
+                      = {calculateArea(
+                        formData.room_dimensions[room.id]?.length,
+                        formData.room_dimensions[room.id]?.width
+                      )} m²
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="form-group">
+              <label>Total Property Area (m²)</label>
+              <input
+                type="number"
+                name="total_area"
+                value={formData.total_area}
+                onChange={handleChange}
+                placeholder="e.g., 120"
+                step="0.1"
+              />
+            </div>
+          </div>
+
           {/* Image Upload */}
           <div className="form-section">
             <h3>Property Images</h3>
@@ -341,7 +443,6 @@ export default function CreateProperty() {
               <label htmlFor="image-upload" className="upload-label">
                 📸 Click to Upload Images
               </label>
-              <p className="upload-hint">Upload up to 10 images (JPG, PNG)</p>
             </div>
 
             {imagePreviews.length > 0 && (

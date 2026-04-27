@@ -8,7 +8,9 @@ import Register from './pages/register/Register';
 import Timeline from './pages/timeline/Timeline';
 import Dashboard from './pages/dashboard/Dashboard';
 import CreateProperty from './pages/properties/CreateProperty';
+import PropertyDetailsPage from './pages/property-detail/PropertyDetailsPage';
 
+<Route path="/property/:id" element={<PropertyDetailsPage />} />
 function App() {
   return (
     <AuthProvider>
@@ -27,6 +29,11 @@ function App() {
           <Route path="/register" element={
             <Layout>
               <Register />
+            </Layout>
+          } />
+          <Route path="/property/:id" element={
+            <Layout>
+            <PropertyDetailsPage />
             </Layout>
           } />
           <Route path="/timeline" element={
@@ -49,5 +56,7 @@ function App() {
     </AuthProvider>
   );
 }
+
+  
 
 export default App;

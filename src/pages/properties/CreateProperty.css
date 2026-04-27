@@ -189,3 +189,144 @@
         gap: 0;
     }
 }
+
+/* Add to CreateProperty.css */
+
+.room-dimensions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.room-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.room-card h4 {
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  color: #1e293b;
+}
+
+.dimension-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.dimension-inputs input {
+  width: 90px;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.dimension-inputs span {
+  color: #64748b;
+}
+
+.area-calc {
+  font-size: 0.75rem;
+  color: #2d6a4f;
+  font-weight: 500;
+  margin-left: 0.25rem;
+}
+
+.section-hint {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+.form-group small {
+  display: block;
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+
+
+/* Add to your Edit Property CSS file */
+
+.room-dimensions-grid-edit {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.room-card-edit {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.room-card-edit label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+  color: #1e293b;
+}
+
+.dimension-inputs-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.dimension-inputs-edit input {
+  width: 85px;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.dimension-inputs-edit input:focus {
+  outline: none;
+  border-color: #2d6a4f;
+  box-shadow: 0 0 0 2px rgba(45, 106, 79, 0.1);
+}
+
+.dimension-inputs-edit span {
+  color: #64748b;
+}
+
+.area-result {
+  font-size: 0.75rem;
+  color: #2d6a4f;
+  font-weight: 500;
+  margin-left: 0.25rem;
+}
+
+.section-hint {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0.5rem 0 1rem 0;
+}
+
+.edit-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.edit-section .section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+

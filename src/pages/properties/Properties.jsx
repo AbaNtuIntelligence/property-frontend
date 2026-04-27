@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import SearchBar from '../../components/search/SearchBar';
+
 
 export default function Properties() {
   const [properties, setProperties] = useState([]);
@@ -52,3 +54,47 @@ export default function Properties() {
     </div>
   );
 }
+
+
+// Add state for search params
+const [searchParams, setSearchParams] = useState({});
+
+// Function to handle search
+const handleSearch = (params) => {
+  setSearchParams(params);
+  // Apply filters to your properties list
+  applySearchFilters(params);
+};
+
+// Function to filter properties based on search
+const applySearchFilters = (params) => {
+  let filtered = [...allProperties];
+  
+  if (params.location) {
+    filtered = filtered.filter(p => 
+      p.city?.toLowerCase().includes(params.location.toLowerCase()) ||
+      p.location?.toLowerCase().includes(params.location.toLowerCase())
+    );
+  }
+  
+  if (params.minPrice) {
+    filtered = filtered.filter(p => p.monthly_rent >= params.minPrice);
+  }
+  
+  if (params.maxPrice) {
+    filtered = filtered.filter(p => p.monthly_rent <= params.maxPrice);
+  }
+  
+  if (params.bedrooms) {
+    filtered = filtered.filter(p => p.bedrooms >= params.bedrooms);
+  }
+  
+  if (params.propertyType) {
+    filtered = filtered.filter(p => p.property_type === params.propertyType);
+  }
+  
+  setFilteredProperties(filtered);
+};
+
+// In your JSX
+<SearchBar onSearch={handleSearch} />

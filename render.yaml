@@ -3,8 +3,10 @@ services:
   - type: web
     name: property-frontend
     runtime: static
-    buildCommand: npm run build
+    buildCommand: npm install && npm run build  # ← Added npm install
     staticPublishPath: ./dist
     envVars:
       - key: VITE_API_URL
         value: https://rental-backend-1-263v.onrender.com
+      - key: NPM_CONFIG_FROZEN_LOCKFILE
+        value: false

@@ -1,0 +1,10 @@
+# render.yaml
+services:
+  - type: web
+    name: property-frontend
+    runtime: static
+    buildCommand: npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://rental-backend-1-263v.onrender.com

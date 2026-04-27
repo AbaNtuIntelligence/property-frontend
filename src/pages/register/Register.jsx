@@ -1,9 +1,12 @@
+// src/pages/register/Register.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 import './Register.css';
 
 export default function Register() {
   const navigate = useNavigate();
+  const { register } = useAuth(); // Use the register from useAuth
   const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -37,14 +40,12 @@ export default function Register() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type
       const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
         setError('Please upload a valid image file (JPEG, PNG, GIF, or WEBP)');
         return;
       }
       
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         setError('Image must be less than 5MB');
         return;
@@ -52,7 +53,6 @@ export default function Register() {
       
       setProfileImage(file);
       
-      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -67,37 +67,13 @@ export default function Register() {
     setImagePreview(null);
   };
 
-  const uploadProfileImage = async (userId, token) => {
-    if (!profileImage) return null;
-    
-    const formData = new FormData();
-    formData.append('profile_picture', profileImage);
-    
-    try {
-      const response = await fetch(`${API_URL}/api/accounts/${userId}/upload-avatar/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        return data.avatar_url;
-      }
-      return null;
-    } catch (error) {
-      console.error('Image upload error:', error);
-      return null;
-    }
-  };
-
+  // SINGLE handleSubmit function - REMOVED THE DUPLICATE
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!agreedToTerms) {
-      setError('Please agree to the Terms of Service');
+    // Validation
+    if (!formData.username || !formData.email || !formData.password) {
+      setError('Please fill in all required fields');
       return;
     }
     
@@ -111,43 +87,46 @@ export default function Register() {
       return;
     }
     
+    if (!agreedToTerms) {
+      setError('You must agree to the Terms of Service');
+      return;
+    }
+    
     setLoading(true);
     setError('');
     setSuccess('');
-
+    
     try {
-      const response = await fetch(`${API_URL}/api/accounts/register/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-          password2: formData.password2,
-          user_type: formData.user_type,
-          phone_number: formData.phone_number,
-          first_name: formData.first_name,
-          last_name: formData.last_name
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        // Store tokens
-        localStorage.setItem('access_token', data.access);
-        localStorage.setItem('refresh_token', data.refresh);
-        
-        // Upload profile image if selected
-        let avatarUrl = null;
-        if (profileImage) {
-          avatarUrl = await uploadProfileImage(data.user.id, data.access);
-          if (avatarUrl) {
-            data.user.avatar = avatarUrl;
+      // Call the register function from useAuth
+      const result = await register(
+        formData.email, 
+        formData.password, 
+        {
+          fullName: `${formData.first_name} ${formData.last_name}`.trim() || formData.username,
+          phone: formData.phone_number,
+          userType: formData.user_type
+        }
+      );
+      
+      if (result.success) {
+        // Upload profile image if selected (after successful registration)
+        const token = localStorage.getItem('access_token');
+        if (profileImage && token) {
+          const uploadFormData = new FormData();
+          uploadFormData.append('avatar', profileImage);
+          
+          try {
+            await fetch(`${API_URL}/api/accounts/avatar/`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              },
+              body: uploadFormData
+            });
+          } catch (err) {
+            console.error('Avatar upload failed:', err);
           }
         }
-        
-        localStorage.setItem('user', JSON.stringify(data.user));
         
         setSuccess('Registration successful! Redirecting to dashboard...');
         
@@ -155,12 +134,11 @@ export default function Register() {
           navigate('/dashboard');
         }, 2000);
       } else {
-        const errorMsg = data.errors ? Object.values(data.errors).flat().join(', ') : data.error || 'Registration failed';
-        setError(errorMsg);
+        setError(result.error || 'Registration failed');
       }
     } catch (err) {
       console.error('Registration error:', err);
-      setError('Cannot connect to backend. Please try again.');
+      setError(err.message || 'Cannot connect to backend. Please try again.');
     } finally {
       setLoading(false);
     }

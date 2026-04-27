@@ -1,17 +1,8 @@
+// src/hooks/useAuth.jsx
 import { createContext, useContext, useState, useEffect } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 const AuthContext = createContext();
-
-
-const login = async (username, password) => {
-  const response = await apiClient.post('/api/accounts/login/', { username, password });
-  if (response.key) {
-    localStorage.setItem('access_token', response.key);
-    return response;
-  }
-  throw new Error('Login failed');
-};
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
@@ -51,6 +42,7 @@ export function AuthProvider({ children }) {
         return null;
     };
 
+    // SINGLE login function - FIXED
     const login = async (username, password) => {
         try {
             const response = await fetch(`${API_URL}/api/accounts/login/`, {
@@ -60,42 +52,71 @@ export function AuthProvider({ children }) {
             });
             const data = await response.json();
 
-            if (!response.ok || !data.success) {
-                return { success: false, error: data.error || 'Login failed' };
+            // Django dj-rest-auth returns 'key' on success
+            if (!response.ok) {
+                const errorMsg = data.detail || data.error || 'Login failed';
+                return { success: false, error: errorMsg };
             }
 
-            localStorage.setItem('access_token', data.access);
-            localStorage.setItem('refresh_token', data.refresh);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            setUser(data.user);
-            return { success: true, user: data.user };
+            // Handle dj-rest-auth response (returns 'key')
+            const token = data.key || data.access;
+            
+            if (token) {
+                localStorage.setItem('access_token', token);
+                localStorage.setItem('user', JSON.stringify({ username }));
+                setUser({ username });
+                return { success: true, user: { username } };
+            }
+            
+            return { success: false, error: 'No token received' };
         } catch (error) {
+            console.error('Login error:', error);
             return { success: false, error: error.message };
         }
     };
 
-    const register = async (userData) => {
-        try {
-            const response = await fetch(`${API_URL}/api/accounts/register/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData),
-            });
-            const data = await response.json();
+    // SINGLE register/signup function - FIXED
+// src/hooks/useAuth.jsx
+const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
-            if (!response.ok || !data.success) {
-                return { success: false, error: data.error || 'Registration failed' };
-            }
-
-            localStorage.setItem('access_token', data.access);
-            localStorage.setItem('refresh_token', data.refresh);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            setUser(data.user);
-            return { success: true, user: data.user };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    };
+const register = async (email, password, userData) => {
+  try {
+    const url = `${API_BASE}/api/accounts/registration/`;
+    console.log('Registering at:', url);
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: userData.fullName?.replace(/\s/g, '').toLowerCase() || email.split('@')[0],
+        email: email,
+        password1: password,
+        password2: password,
+        first_name: userData.fullName?.split(' ')[0] || '',
+        last_name: userData.fullName?.split(' ')[1] || '',
+      }),
+    });
+    
+    console.log('Response status:', response.status);
+    const data = await response.json();
+    console.log('Response data:', data);
+    
+    if (!response.ok) {
+      throw new Error(data.detail || Object.values(data)[0]?.[0] || 'Registration failed');
+    }
+    
+    if (data.key) {
+      localStorage.setItem('access_token', data.key);
+    }
+    
+    return { success: true, data };
+  } catch (error) {
+    console.error('Registration error:', error);
+    return { success: false, error: error.message };
+  }
+};
 
     const logout = () => {
         localStorage.clear();
@@ -103,7 +124,15 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, refreshUser, loading, isAuthenticated: !!user }}>
+        <AuthContext.Provider value={{ 
+            user, 
+            login, 
+            register, 
+            logout, 
+            refreshUser, 
+            loading, 
+            isAuthenticated: !!user 
+        }}>
             {children}
         </AuthContext.Provider>
     );

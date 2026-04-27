@@ -8,6 +8,7 @@ import Register from './pages/register/Register';
 import Timeline from './pages/timeline/Timeline';
 import Dashboard from './pages/dashboard/Dashboard';
 import CreateProperty from './pages/properties/CreateProperty';
+import PropertiesPage from './pages/properties/Properties';
 import PropertyDetailsPage from './pages/property-detail/PropertyDetailsPage';
 
 <Route path="/property/:id" element={<PropertyDetailsPage />} />
@@ -41,6 +42,7 @@ function App() {
               <Timeline />
             </Layout>
           } />
+          <Route path="/properties" element={<PropertiesPage />} />
           <Route path="/dashboard" element={
             <Layout>
               <Dashboard />

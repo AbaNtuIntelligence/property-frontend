@@ -436,3 +436,24 @@
     text-align: center;
   }
 }
+/* In your Timeline.css */
+.timeline-three-column {
+  display: flex;
+  gap: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.timeline-right-col {
+  flex: 0 0 320px;
+  /* Add margin to the column containing the sidebar */
+  margin-left: auto;
+}
+
+.right-sidebar {
+  position: sticky;
+  top: 80px;
+  /* Add margin inside the sidebar */
+  margin: 0 0.5rem;
+}

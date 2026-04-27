@@ -1,0 +1,23 @@
+/* Default margins for desktop */
+.right-sidebar {
+  position: sticky;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 1rem 1.5rem 1rem 0.5rem;
+}
+
+/* Tablet view */
+@media (max-width: 1024px) {
+  .right-sidebar {
+    margin: 0.75rem 1rem;
+  }
+}
+
+/* Mobile view */
+@media (max-width: 768px) {
+  .right-sidebar {
+    margin: 0.5rem;
+  }
+}

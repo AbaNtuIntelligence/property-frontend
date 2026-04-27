@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import './Sidebar.css';
+import './Right-Sidebar.css';
 
 const formatZAR = (amount) => {
     return new Intl.NumberFormat('en-ZA', {

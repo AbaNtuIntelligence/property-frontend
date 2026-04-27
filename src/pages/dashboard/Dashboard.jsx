@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import PropertyManager from '../../components/property/PropertyManager';
 import './Dashboard.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
-const Dashboard = () => {
+export default function Dashboard() {
   const navigate = useNavigate();
   const { user, logout, refreshUser } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
   const [profileData, setProfileData] = useState({
     username: '',
     email: '',
@@ -18,12 +16,34 @@ const Dashboard = () => {
     last_name: '',
     user_type: ''
   });
+  const [myProperties, setMyProperties] = useState([]);
+  const [loadingProperties, setLoadingProperties] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [fetchingUser, setFetchingUser] = useState(true);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [propertiesFetched, setPropertiesFetched] = useState(false);
+  
+  // Edit/Delete states
+  const [editingProperty, setEditingProperty] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    description: '',
+    monthly_rent: '',
+    bedrooms: '',
+    bathrooms: '',
+    address: '',
+    city: '',
+    status: 'available',
+    has_inverter: false
+  });
+  
+  const fetchRef = useRef(false);
 
   // Fetch fresh user data on mount
   const loadUserData = useCallback(async () => {
@@ -59,7 +79,6 @@ const Dashboard = () => {
           setImagePreview(avatarUrl);
         }
         
-        // Update localStorage and auth context
         localStorage.setItem('user', JSON.stringify(freshUser));
         if (refreshUser) await refreshUser();
       } else if (response.status === 401) {
@@ -72,17 +91,55 @@ const Dashboard = () => {
     }
   }, [navigate, refreshUser]);
 
+  // Fetch properties only once when needed
+  const fetchMyProperties = useCallback(async () => {
+    if (fetchRef.current) return;
+    fetchRef.current = true;
+    
+    setLoadingProperties(true);
+    const token = localStorage.getItem('access_token');
+    
+    try {
+      const response = await fetch(`${API_URL}/api/properties/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const allProperties = await response.json();
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const userProperties = allProperties.filter(p => p.owner_username === currentUser.username);
+        setMyProperties(userProperties);
+        setPropertiesFetched(true);
+      }
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+    } finally {
+      setLoadingProperties(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadUserData();
   }, [loadUserData]);
 
+  useEffect(() => {
+    if (activeTab === 'properties' && profileData.user_type === 'owner' && !propertiesFetched && !fetchRef.current) {
+      fetchMyProperties();
+    }
+  }, [activeTab, profileData.user_type, propertiesFetched, fetchMyProperties]);
+
+  // Navigation handlers
   const handleExploreProperties = () => navigate('/timeline');
   const handleListProperty = () => navigate('/property/new');
+  const handleViewProperty = (propertyId) => navigate(`/property/${propertyId}`);
   const handleLogout = async () => {
     await logout();
     navigate('/');
   };
 
+  // Profile handlers
   const handleProfileChange = (e) => {
     setProfileData({
       ...profileData,
@@ -118,7 +175,25 @@ const Dashboard = () => {
     }
 
     try {
-      // Update profile
+      if (profileImage) {
+        const formData = new FormData();
+        formData.append('avatar', profileImage);
+        
+        const avatarResponse = await fetch(`${API_URL}/api/accounts/upload-avatar/`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        
+        if (avatarResponse.ok) {
+          const avatarData = await avatarResponse.json();
+          if (avatarData.avatar_url) {
+            setImagePreview(avatarData.avatar_url.startsWith('http') ? avatarData.avatar_url : `${API_URL}${avatarData.avatar_url}`);
+          }
+          setProfileImage(null);
+        }
+      }
+      
       const response = await fetch(`${API_URL}/api/accounts/profile/`, {
         method: 'PATCH',
         headers: {
@@ -136,34 +211,9 @@ const Dashboard = () => {
 
       if (response.ok) {
         const updatedUser = await response.json();
-
-        // Upload avatar if changed
-        if (profileImage) {
-          const formData = new FormData();
-          formData.append('avatar', profileImage);
-          
-          const avatarResponse = await fetch(`${API_URL}/api/accounts/upload-avatar/`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
-            body: formData
-          });
-          
-          if (avatarResponse.ok) {
-            const avatarData = await avatarResponse.json();
-            updatedUser.avatar = avatarData.avatar_url;
-            if (avatarData.avatar_url) {
-              setImagePreview(avatarData.avatar_url.startsWith('http') 
-                ? avatarData.avatar_url 
-                : `${API_URL}${avatarData.avatar_url}`);
-            }
-          }
-        }
-
-        // Update localStorage and state
         localStorage.setItem('user', JSON.stringify(updatedUser));
         setProfileData(prev => ({ ...prev, ...updatedUser }));
         if (refreshUser) await refreshUser();
-        
         setMessage('Profile updated successfully!');
         setTimeout(() => setMessage(''), 3000);
       } else {
@@ -178,6 +228,92 @@ const Dashboard = () => {
     }
   };
 
+  // Property CRUD handlers
+  const handleEditProperty = (property) => {
+    setEditingProperty(property);
+    setEditFormData({
+      title: property.title || '',
+      description: property.description || '',
+      monthly_rent: property.monthly_rent || '',
+      bedrooms: property.bedrooms || '',
+      bathrooms: property.bathrooms || '',
+      address: property.address || '',
+      city: property.city || '',
+      status: property.status || 'available',
+      has_inverter: property.has_inverter || false
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateProperty = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    
+    const token = localStorage.getItem('access_token');
+    
+    try {
+      const response = await fetch(`${API_URL}/api/properties/${editingProperty.id}/update/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...editFormData,
+          monthly_rent: parseFloat(editFormData.monthly_rent),
+          bedrooms: parseInt(editFormData.bedrooms),
+          bathrooms: parseFloat(editFormData.bathrooms)
+        })
+      });
+      
+      if (response.ok) {
+        const updatedProperty = await response.json();
+        setMyProperties(myProperties.map(p => 
+          p.id === updatedProperty.id ? updatedProperty : p
+        ));
+        setShowEditModal(false);
+        setEditingProperty(null);
+        setMessage('Property updated successfully!');
+        setTimeout(() => setMessage(''), 3000);
+      } else {
+        setError('Failed to update property');
+      }
+    } catch (err) {
+      setError('Connection error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteProperty = (propertyId) => {
+    setShowDeleteConfirm(propertyId);
+  };
+
+  const confirmDeleteProperty = async () => {
+    const token = localStorage.getItem('access_token');
+    
+    try {
+      const response = await fetch(`${API_URL}/api/properties/${showDeleteConfirm}/delete/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        setMyProperties(myProperties.filter(p => p.id !== showDeleteConfirm));
+        setShowDeleteConfirm(null);
+        setMessage('Property deleted successfully!');
+        setTimeout(() => setMessage(''), 3000);
+      } else {
+        setError('Failed to delete property');
+      }
+    } catch (err) {
+      setError('Connection error');
+    }
+  };
+
   const getAvatarUrl = () => {
     if (imagePreview) return imagePreview;
     if (profileData.avatar) {
@@ -186,6 +322,14 @@ const Dashboard = () => {
         : `${API_URL}${profileData.avatar}`;
     }
     return null;
+  };
+
+  const formatZAR = (amount) => {
+    return new Intl.NumberFormat('en-ZA', {
+        style: 'currency',
+        currency: 'ZAR',
+        minimumFractionDigits: 0,
+    }).format(amount);
   };
 
   if (fetchingUser) {
@@ -216,7 +360,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Tab Navigation */}
       <div className="dashboard-tabs">
         <button className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
           📊 Overview
@@ -226,7 +369,7 @@ const Dashboard = () => {
         </button>
         {profileData.user_type === 'owner' && (
           <button className={`tab-btn ${activeTab === 'properties' ? 'active' : ''}`} onClick={() => setActiveTab('properties')}>
-            🏠 My Properties
+            🏠 My Properties ({myProperties.length})
           </button>
         )}
       </div>
@@ -259,20 +402,6 @@ const Dashboard = () => {
                 <button className="card-btn">Manage →</button>
               </div>
             )}
-            
-            <div className="dashboard-card">
-              <div className="card-icon">💬</div>
-              <h3>Messages</h3>
-              <p>Communicate with potential renters</p>
-              <button className="card-btn">View Messages →</button>
-            </div>
-            
-            <div className="dashboard-card">
-              <div className="card-icon">❤️</div>
-              <h3>Saved Properties</h3>
-              <p>View your saved properties</p>
-              <button className="card-btn">View Saved →</button>
-            </div>
           </div>
         )}
 
@@ -285,7 +414,6 @@ const Dashboard = () => {
             {error && <div className="error-message">{error}</div>}
             
             <form onSubmit={handleUpdateProfile} className="profile-form">
-              {/* Profile Image */}
               <div className="form-group avatar-group">
                 <label>Profile Picture</label>
                 <div className="avatar-upload">
@@ -308,14 +436,6 @@ const Dashboard = () => {
                         style={{ display: 'none' }}
                       />
                     </label>
-                    {profileImage && (
-                      <button type="button" className="cancel-upload" onClick={() => {
-                        setProfileImage(null);
-                        setImagePreview(profileData.avatar ? `${API_URL}${profileData.avatar}` : null);
-                      }}>
-                        Cancel
-                      </button>
-                    )}
                   </div>
                   <p className="upload-hint">JPEG, PNG, GIF up to 5MB</p>
                 </div>
@@ -396,13 +516,205 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* My Properties Tab - Only for Owners */}
+        {/* My Properties Tab */}
         {activeTab === 'properties' && profileData.user_type === 'owner' && (
-          <PropertyManager />
+          <div className="my-properties-section">
+            <div className="properties-header">
+              <h2>My Properties</h2>
+              <button onClick={handleListProperty} className="add-property-btn">
+                + Add New Property
+              </button>
+            </div>
+            
+            {loadingProperties ? (
+              <div className="loading-properties">Loading your properties...</div>
+            ) : myProperties.length === 0 ? (
+              <div className="no-properties">
+                <span>🏠</span>
+                <h3>No properties yet</h3>
+                <p>You haven't listed any properties. Click below to get started!</p>
+                <button onClick={handleListProperty} className="list-property-btn">
+                  List Your First Property
+                </button>
+              </div>
+            ) : (
+              <div className="properties-list">
+                {myProperties.map(property => (
+                  <div key={property.id} className="property-item">
+                    <div className="property-image-small">
+                      {property.images && property.images.length > 0 ? (
+                        <img src={property.images[0].image || property.images[0]} alt={property.title} />
+                      ) : (
+                        <div className="no-image-small">🏠</div>
+                      )}
+                    </div>
+                    <div className="property-details">
+                      <h3>{property.title}</h3>
+                      <p className="property-price">{formatZAR(property.monthly_rent)}<span>/month</span></p>
+                      <p className="property-location">📍 {property.city}</p>
+                      <div className="property-status">
+                        <span className={`status-badge ${property.status || 'available'}`}>
+                          {property.status || 'available'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="property-actions">
+                      <button className="edit-property-btn" onClick={() => handleEditProperty(property)}>
+                        ✏️ Edit
+                      </button>
+                      <button className="delete-property-btn" onClick={() => handleDeleteProperty(property.id)}>
+                        🗑️ Delete
+                      </button>
+                      <button className="view-property-btn" onClick={() => handleViewProperty(property.id)}>
+                        👁️ View
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
+
+      {/* Edit Property Modal */}
+      {showEditModal && editingProperty && (
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Edit Property</h2>
+              <button className="modal-close" onClick={() => setShowEditModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <form onSubmit={handleUpdateProperty} className="edit-property-form">
+                <div className="form-group">
+                  <label>Title</label>
+                  <input
+                    type="text"
+                    value={editFormData.title}
+                    onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea
+                    value={editFormData.description}
+                    onChange={(e) => setEditFormData({...editFormData, description: e.target.value})}
+                    rows="3"
+                  />
+                </div>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Monthly Rent (R)</label>
+                    <input
+                      type="number"
+                      value={editFormData.monthly_rent}
+                      onChange={(e) => setEditFormData({...editFormData, monthly_rent: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>City</label>
+                    <input
+                      type="text"
+                      value={editFormData.city}
+                      onChange={(e) => setEditFormData({...editFormData, city: e.target.value})}
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Bedrooms</label>
+                    <input
+                      type="number"
+                      value={editFormData.bedrooms}
+                      onChange={(e) => setEditFormData({...editFormData, bedrooms: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Bathrooms</label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={editFormData.bathrooms}
+                      onChange={(e) => setEditFormData({...editFormData, bathrooms: e.target.value})}
+                    />
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label>Address</label>
+                  <input
+                    type="text"
+                    value={editFormData.address}
+                    onChange={(e) => setEditFormData({...editFormData, address: e.target.value})}
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Status</label>
+                  <select
+                    value={editFormData.status}
+                    onChange={(e) => setEditFormData({...editFormData, status: e.target.value})}
+                  >
+                    <option value="available">Available</option>
+                    <option value="rented">Rented</option>
+                    <option value="maintenance">Under Maintenance</option>
+                  </select>
+                </div>
+                
+                <div className="form-checkbox">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={editFormData.has_inverter}
+                      onChange={(e) => setEditFormData({...editFormData, has_inverter: e.target.checked})}
+                    />
+                    🔋 Inverter Backup
+                  </label>
+                </div>
+                
+                <div className="modal-actions">
+                  <button type="button" className="cancel-btn" onClick={() => setShowEditModal(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="save-btn" disabled={loading}>
+                    {loading ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="modal-overlay" onClick={() => setShowDeleteConfirm(null)}>
+          <div className="modal-content small" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Confirm Delete</h2>
+              <button className="modal-close" onClick={() => setShowDeleteConfirm(null)}>×</button>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to delete this property? This action cannot be undone.</p>
+              <div className="modal-actions">
+                <button className="cancel-btn" onClick={() => setShowDeleteConfirm(null)}>
+                  Cancel
+                </button>
+                <button className="delete-confirm-btn" onClick={confirmDeleteProperty}>
+                  Yes, Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
-export default Dashboard;
+}

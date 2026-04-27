@@ -3,6 +3,16 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 const AuthContext = createContext();
 
+
+const login = async (username, password) => {
+  const response = await apiClient.post('/api/accounts/login/', { username, password });
+  if (response.key) {
+    localStorage.setItem('access_token', response.key);
+    return response;
+  }
+  throw new Error('Login failed');
+};
+
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);

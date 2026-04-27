@@ -2,22 +2,27 @@
 const getApiUrl = () => {
   // For development
   if (import.meta.env.DEV) {
-    return import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+    return import.meta.env.VITE_API_URL || 'http://localhost:8000';
   }
   
-  // For production (Netlify)
+  // For production (Render)
   if (import.meta.env.PROD) {
-    // Use environment variable or relative path
-    return import.meta.env.VITE_API_URL || '/api';
+    const backendUrl = import.meta.env.VITE_API_URL;
+    if (!backendUrl) {
+      console.error('VITE_API_URL is not set!');
+      return 'https://rental-backend-1-263v.onrender.com';
+    }
+    // Remove trailing /api if accidentally added
+    return backendUrl.replace(/\/api$/, '');
   }
   
-  return '/api';
+  return 'http://localhost:8000';
 };
 
 export const apiClient = {
   async request(endpoint, options = {}) {
     const baseUrl = getApiUrl();
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('access_token') || localStorage.getItem('auth_token');
     
     const headers = {
       'Content-Type': 'application/json',
@@ -25,38 +30,27 @@ export const apiClient = {
     };
     
     if (token) {
-      headers['Authorization'] = `Token ${token}`;
+      headers['Authorization'] = `Bearer ${token}`;
     }
     
+    // Build URL - endpoints should already start with /api/
+    let url = endpoint.startsWith('/') ? `${baseUrl}${endpoint}` : `${baseUrl}/${endpoint}`;
+    url = url.replace(/([^:]\/)\/+/g, "$1");
+    
+    console.log(`API Request: ${options.method || 'GET'} ${url}`);
+    
     try {
-      // Remove double slashes
-      let url = `${baseUrl}${endpoint}`;
-      url = url.replace(/([^:]\/)\/+/g, "$1");
+      const response = await fetch(url, { ...options, headers });
       
-      const response = await fetch(url, {
-        ...options,
-        headers
-      });
-      
-      // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.detail || data.error || 'Request failed');
-        }
-        return data;
-      } else {
-        // Handle non-JSON responses
-        const text = await response.text();
-        if (!response.ok) {
-          throw new Error(`Server error: ${response.status}`);
-        }
-        return text;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || errorData.error || `HTTP ${response.status}`);
       }
+      
+      return await response.json();
     } catch (error) {
-      console.error('API request error:', error);
-      throw error;
+      console.error('API Error:', error);
+      throw new Error('Cannot connect to backend. Please try again.');
     }
   },
   
@@ -82,3 +76,5 @@ export const apiClient = {
     return this.request(endpoint, { method: 'DELETE' });
   }
 };
+
+export default apiClient;

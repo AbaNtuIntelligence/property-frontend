@@ -25,31 +25,69 @@ export default function LandingPage() {
     setIsScrolled(window.scrollY > 50);
   };
 
+  // Fetch properties from backend - SAME logic as Timeline
   const fetchFeaturedProperties = async () => {
     try {
+      setLoading(true);
       const response = await fetch(`${API_URL}/api/properties/`);
       if (response.ok) {
         const data = await response.json();
-        setFeaturedProperties(data.slice(0, 6));
+        
+        // Filter properties with images first - SAME as Timeline
+        const withImages = data.filter(p => p.images && p.images.length > 0);
+        
+        // Take first 6 as featured
+        const featured = withImages.slice(0, 6);
+        setFeaturedProperties(featured);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error fetching properties:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Format ZAR currency
+  const formatZAR = (amount) => {
+    if (!amount) return 'Price on request';
+    return new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: 'ZAR',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  // Get image URL - SAME as Timeline
+  const getImageUrl = (img) => {
+    if (!img) return null;
+    const imgUrl = img.image || img;
+    if (!imgUrl) return null;
+    if (imgUrl.startsWith('http')) return imgUrl;
+    return `${API_URL}${imgUrl}`;
   };
 
   const handleExploreProperties = () => {
     if (isAuthenticated) {
       navigate('/timeline');
     } else {
-      navigate('/login');
+      navigate('/login', { state: { returnTo: '/timeline' } });
     }
   };
 
   const handleListProperty = () => {
-    // Direct to CreateProperty - login required will be handled by ProtectedRoute
-    navigate('/property/new');
+    if (isAuthenticated) {
+      navigate('/property/new');
+    } else {
+      navigate('/login', { state: { returnTo: '/property/new' } });
+    }
+  };
+
+  const handlePropertyClick = (propertyId) => {
+    if (isAuthenticated) {
+      navigate(`/property/${propertyId}`);
+    } else {
+      navigate('/login', { state: { returnTo: `/property/${propertyId}` } });
+    }
   };
 
   const handleSearch = (e) => {
@@ -60,7 +98,11 @@ export default function LandingPage() {
     if (priceRange) query += `${query ? '&' : ''}price=${priceRange}`;
     if (propertyType) query += `${query ? '&' : ''}type=${propertyType}`;
     
-    navigate(`/search?${query}`);
+    if (isAuthenticated) {
+      navigate(`/properties?${query}`);
+    } else {
+      navigate('/login', { state: { returnTo: `/properties?${query}` } });
+    }
   };
 
   const scrollToProperties = () => {
@@ -82,7 +124,7 @@ export default function LandingPage() {
             Find Your <span className="gradient-text">Dream Property</span>
           </h1>
           <p className="hero-subtitle">
-            Discover thousands of rental properties, apartments, and homes in your desired location
+            Discover thousands of rental properties across South Africa
           </p>
           
           {/* Search Bar */}
@@ -92,7 +134,7 @@ export default function LandingPage() {
                 <span className="search-icon">🔍</span>
                 <input
                   type="text"
-                  placeholder="Search by city, address, or ZIP"
+                  placeholder="Search by city, address, or suburb..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -103,12 +145,11 @@ export default function LandingPage() {
                 onChange={(e) => setSelectedLocation(e.target.value)}
               >
                 <option value="">All Locations</option>
-                <option value="new-york">🗽 New York</option>
-                <option value="los-angeles">🌴 Los Angeles</option>
-                <option value="chicago">🌆 Chicago</option>
-                <option value="houston">🤠 Houston</option>
-                <option value="seattle">☕ Seattle</option>
-                <option value="miami">🏖️ Miami</option>
+                <option value="cape-town">🌊 Cape Town</option>
+                <option value="johannesburg">🏙️ Johannesburg</option>
+                <option value="durban">🌴 Durban</option>
+                <option value="pretoria">🏛️ Pretoria</option>
+                <option value="port-elizabeth">⚓ Port Elizabeth</option>
               </select>
               <select 
                 className="search-select"
@@ -127,11 +168,13 @@ export default function LandingPage() {
                 onChange={(e) => setPriceRange(e.target.value)}
               >
                 <option value="">Any Price</option>
-                <option value="0-1000">$0 - $1,000</option>
-                <option value="1000-2000">$1,000 - $2,000</option>
-                <option value="2000-3000">$2,000 - $3,000</option>
-                <option value="3000-5000">$3,000 - $5,000</option>
-                <option value="5000+">$5,000+</option>
+                <option value="0-5000">R0 - R5,000</option>
+                <option value="5000-10000">R5,000 - R10,000</option>
+                <option value="10000-15000">R10,000 - R15,000</option>
+                <option value="15000-20000">R15,000 - R20,000</option>
+                <option value="20000-30000">R20,000 - R30,000</option>
+                <option value="30000-50000">R30,000 - R50,000</option>
+                <option value="50000+">R50,000+</option>
               </select>
               <button type="submit" className="search-btn">
                 🔍 Search
@@ -177,116 +220,67 @@ export default function LandingPage() {
       </section>
 
       {/* Featured Properties Section */}
-      <section id="featured-properties" className="featured-section">
-        <div className="section-header">
-          <div className="section-tag">Featured Listings</div>
-          <h2>Popular Properties</h2>
-          <p>Discover the most viewed and loved properties this week</p>
-        </div>
-
-        {loading ? (
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Loading properties...</p>
-          </div>
-        ) : featuredProperties.length === 0 ? (
-          <div className="empty-state">
-            <span className="empty-icon">🏠</span>
-            <h3>No properties yet</h3>
-            <p>Be the first to list your property!</p>
-            <button onClick={handleListProperty} className="empty-btn">List Your Property</button>
-          </div>
-        ) : (
-          <div className="properties-grid">
-            {featuredProperties.map((property, index) => (
-              <div key={property.id} className="property-card" data-aos="fade-up" data-aos-delay={index * 100}>
-                <div className="card-badge">{index + 1}</div>
-                <div className="property-image">
-                  <img 
-                    src={property.images?.[0]?.image || 'https://placehold.co/400x300/667eea/white?text=Property'} 
-                    alt={property.title}
-                  />
-                  <div className="image-overlay">
-                    <button 
-                      onClick={() => navigate(`/property/${property.id}`)}
-                      className="quick-view"
-                    >
-                      Quick View
-                    </button>
-                  </div>
-                </div>
-                <div className="property-info">
-                  <div className="property-price">${property.monthly_rent}/month</div>
-                  <h3>{property.title}</h3>
-                  <div className="property-location">
-                    <span>📍</span> {property.city}, {property.state || 'USA'}
-                  </div>
-                  <div className="property-features">
-                    <span>🛏️ {property.bedrooms || 2} beds</span>
-                    <span>🛁 {property.bathrooms || 2} baths</span>
-                    <span>📐 {property.square_feet || 1200} sqft</span>
-                  </div>
-                  <button 
-                    onClick={() => navigate(`/property/${property.id}`)}
-                    className="view-details"
-                  >
-                    View Details →
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="section-footer">
-          <button onClick={handleExploreProperties} className="view-all-btn">
-            Browse All Properties
-            <span className="btn-icon">→</span>
-          </button>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="features-section">
-        <div className="features-container">
+      <section id="featured-properties" className="featured-properties-section">
+        <div className="container">
           <div className="section-header">
-            <div className="section-tag">Why Choose Us</div>
-            <h2>Experience the Best Property Platform</h2>
-            <p>We make property rental simple, secure, and stress-free</p>
+            <h2>Featured Properties</h2>
+            <p>Hand-picked properties just for you</p>
           </div>
 
-          <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-icon">🔍</div>
-              <h3>Smart Search</h3>
-              <p>Advanced filters to find your perfect match</p>
+          {loading ? (
+            <div className="loading-state">
+              <div className="loading-spinner"></div>
+              <p>Loading properties...</p>
             </div>
-            <div className="feature-card">
-              <div className="feature-icon">🔒</div>
-              <h3>Secure Payments</h3>
-              <p>Safe and encrypted transactions</p>
+          ) : featuredProperties.length === 0 ? (
+            <div className="empty-state">
+              <p>No properties available yet.</p>
             </div>
-            <div className="feature-card">
-              <div className="feature-icon">🏠</div>
-              <h3>Verified Listings</h3>
-              <p>All properties are verified by our team</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">💬</div>
-              <h3>24/7 Support</h3>
-              <p>We're here to help you anytime</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">📱</div>
-              <h3>Mobile App</h3>
-              <p>Search on the go with our app</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">⭐</div>
-              <h3>Trusted Reviews</h3>
-              <p>Real reviews from real tenants</p>
-            </div>
-          </div>
+          ) : (
+            <>
+              <div className="properties-grid">
+                {featuredProperties.map((property) => (
+                  <div 
+                    key={property.id} 
+                    className="property-card"
+                    onClick={() => handlePropertyClick(property.id)}
+                  >
+                    <div className="property-image-wrapper">
+                      <img 
+                        src={getImageUrl(property.images?.[0]) || 'https://placehold.co/400x250/1a472a/white?text=🏠'} 
+                        alt={property.title}
+                        className="property-image"
+                        onError={(e) => e.target.src = 'https://placehold.co/400x250/1a472a/white?text=🏠'}
+                      />
+                      <span className="featured-badge">Featured</span>
+                    </div>
+                    <div className="property-info">
+                      <h3 className="property-title">{property.title}</h3>
+                      <p className="property-location">📍 {property.city || 'South Africa'}</p>
+                      <div className="property-details">
+                        <span>🛏️ {property.bedrooms || '?'} beds</span>
+                        <span>🛁 {property.bathrooms || '?'} baths</span>
+                        <span>📐 {property.size || '?'} m²</span>
+                      </div>
+                      <div className="property-footer">
+                        <p className="property-price">
+                          {formatZAR(property.monthly_rent || property.price)}
+                          <span>/month</span>
+                        </p>
+                        <button className="view-btn">View Details →</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="view-all-container">
+                <button onClick={handleExploreProperties} className="view-all-btn">
+                  View All Properties →
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </section>
 

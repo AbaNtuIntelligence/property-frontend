@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Timeline from '../timeline/Timeline';
 import './LandingPage.css';
 
 export default function LandingPage() {
@@ -8,6 +7,78 @@ export default function LandingPage() {
   const token = localStorage.getItem('access_token');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAuthenticated = !!token;
+
+  const [featuredProperties, setFeaturedProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  
+  const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
+  // Fetch properties from backend - SAME as Timeline
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${API_URL}/api/properties/`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Get properties with images first - SAME logic as Timeline
+          const withImages = data.filter(p => p.images && p.images.length > 0);
+          
+          // Take first 6 as featured
+          const featured = withImages.slice(0, 6);
+          setFeaturedProperties(featured);
+          setError('');
+        } else {
+          setError('Unable to load properties');
+        }
+      } catch (err) {
+        console.error('Error fetching properties:', err);
+        setError('Cannot connect to server');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, [API_URL]);
+
+  // Format ZAR currency
+  const formatZAR = (amount) => {
+    if (!amount) return 'Price on request';
+    return new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: 'ZAR',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  // Get image URL - SAME as Timeline
+  const getImageUrl = (img) => {
+    if (!img) return null;
+    const imgUrl = img.image || img;
+    if (!imgUrl) return null;
+    if (imgUrl.startsWith('http')) return imgUrl;
+    return `${API_URL}${imgUrl}`;
+  };
+
+  const handlePropertyClick = (propertyId) => {
+    if (isAuthenticated) {
+      navigate(`/property/${propertyId}`);
+    } else {
+      navigate('/login', { state: { returnTo: `/property/${propertyId}` } });
+    }
+  };
+
+  const handleExploreClick = () => {
+    if (isAuthenticated) {
+      navigate('/timeline');
+    } else {
+      navigate('/login', { state: { returnTo: '/timeline' } });
+    }
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -28,13 +99,28 @@ export default function LandingPage() {
         zIndex: 1000,
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        flexWrap: 'wrap'
       }}>
         <div className="logo" style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>
           🏠 PropertyRental
         </div>
         
-        <div className="nav-buttons" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+        <div className="nav-buttons" style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button 
+            onClick={handleExploreClick}
+            style={{
+              padding: '8px 20px',
+              background: '#28a745',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer'
+            }}
+          >
+            🔍 Explore Properties
+          </button>
+          
           {!isAuthenticated ? (
             <>
               <button 
@@ -100,10 +186,183 @@ export default function LandingPage() {
         </div>
       </div>
       
-      {/* Timeline - Always visible */}
-      <div style={{ marginTop: '70px' }}>
-        <Timeline />
+      {/* Hero Section */}
+      <div className="hero-section" style={{
+        marginTop: '80px',
+        padding: '60px 20px',
+        textAlign: 'center',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white'
+      }}>
+        <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>
+          Find Your <span style={{ color: '#ffd700' }}>Dream Property</span>
+        </h1>
+        <p style={{ fontSize: '18px', marginBottom: '30px', opacity: 0.9 }}>
+          Discover thousands of rental properties, apartments, and homes in your desired location
+        </p>
+        <button 
+          onClick={handleExploreClick}
+          style={{
+            padding: '12px 30px',
+            background: '#ffd700',
+            color: '#333',
+            border: 'none',
+            borderRadius: '5px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            cursor: 'pointer'
+          }}
+        >
+          Start Exploring →
+        </button>
       </div>
+
+      {/* Featured Properties Section - SAME as Timeline card style */}
+      <div className="featured-section" style={{ padding: '60px 20px', background: '#f8fafc' }}>
+        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <h2 style={{ textAlign: 'center', fontSize: '32px', marginBottom: '10px', color: '#1e293b' }}>
+            Featured Properties
+          </h2>
+          <p style={{ textAlign: 'center', color: '#64748b', marginBottom: '40px' }}>
+            Hand-picked properties just for you
+          </p>
+          
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <div className="loading-spinner" style={{ width: '40px', height: '40px', border: '3px solid #e2e8f0', borderTopColor: '#667eea', borderRadius: '50%', margin: '0 auto 10px', animation: 'spin 1s linear infinite' }}></div>
+              <p>Loading properties...</p>
+            </div>
+          ) : error ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: '#ef4444' }}>{error}</p>
+              <button onClick={() => window.location.reload()} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+                Try Again
+              </button>
+            </div>
+          ) : featuredProperties.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p>No properties available yet.</p>
+            </div>
+          ) : (
+            <>
+              <div className="properties-grid" style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+                gap: '24px'
+              }}>
+                {featuredProperties.map((property) => (
+                  <div 
+                    key={property.id} 
+                    className="property-card"
+                    onClick={() => handlePropertyClick(property.id)}
+                    style={{
+                      background: 'white',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                      cursor: 'pointer',
+                      transition: 'transform 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                  >
+                    <div className="property-image-wrapper" style={{ position: 'relative', height: '220px', overflow: 'hidden' }}>
+                      <img 
+                        src={getImageUrl(property.images?.[0]) || 'https://placehold.co/400x250/1a472a/white?text=🏠'} 
+                        alt={property.title}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
+                        onError={(e) => e.target.src = 'https://placehold.co/400x250/1a472a/white?text=🏠'}
+                      />
+                      <span style={{
+                        position: 'absolute',
+                        top: '12px',
+                        left: '12px',
+                        background: '#2d6a4f',
+                        color: 'white',
+                        padding: '4px 12px',
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        fontWeight: 'bold'
+                      }}>
+                        Featured
+                      </span>
+                    </div>
+                    <div className="property-info" style={{ padding: '16px' }}>
+                      <h3 style={{ fontSize: '18px', marginBottom: '8px', color: '#1e293b' }}>{property.title}</h3>
+                      <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '12px' }}>📍 {property.city || 'South Africa'}</p>
+                      <div className="property-details" style={{
+                        display: 'flex',
+                        gap: '16px',
+                        padding: '12px 0',
+                        borderTop: '1px solid #e2e8f0',
+                        borderBottom: '1px solid #e2e8f0',
+                        marginBottom: '12px',
+                        fontSize: '13px',
+                        color: '#475569'
+                      }}>
+                        <span>🛏️ {property.bedrooms || '?'} beds</span>
+                        <span>🛁 {property.bathrooms || '?'} baths</span>
+                        <span>📐 {property.size || '?'} m²</span>
+                      </div>
+                      <div className="property-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <p className="property-price" style={{ fontSize: '20px', fontWeight: 'bold', color: '#2d6a4f', margin: 0 }}>
+                          {formatZAR(property.monthly_rent || property.price)}
+                          <span style={{ fontSize: '12px', fontWeight: 'normal', color: '#64748b' }}>/month</span>
+                        </p>
+                        <button className="view-btn" style={{
+                          padding: '6px 12px',
+                          background: '#f1f5f9',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          transition: 'background 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#2d6a4f'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = '#f1f5f9'}>
+                          View Details →
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="view-all-container" style={{ textAlign: 'center', marginTop: '40px' }}>
+                <button 
+                  onClick={handleExploreClick}
+                  style={{
+                    padding: '12px 28px',
+                    background: 'transparent',
+                    color: '#2d6a4f',
+                    border: '2px solid #2d6a4f',
+                    borderRadius: '50px',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#2d6a4f';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = '#2d6a4f';
+                  }}
+                >
+                  View All Properties →
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }

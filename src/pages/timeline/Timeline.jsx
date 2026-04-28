@@ -216,23 +216,30 @@ const Timeline = () => {
         alert('🔗 Property link copied to clipboard!');
     };
 
-    const handleWhatsAppContact = (whatsappNumber, propertyTitle) => {
-        if (!whatsappNumber) {
-            alert('No WhatsApp number provided for this property owner.');
-            return;
-        }
-        
-        let formattedNumber = whatsappNumber.replace(/\s/g, '');
-        if (formattedNumber.startsWith('0')) {
-            formattedNumber = '27' + formattedNumber.substring(1);
-        }
-        if (!formattedNumber.startsWith('27')) {
-            formattedNumber = '27' + formattedNumber;
-        }
-        
-        const message = encodeURIComponent(`Hi! I'm interested in your property: ${propertyTitle}. Is it still available?`);
-        window.open(`https://wa.me/${formattedNumber}?text=${message}`, '_blank');
-    };
+    <div className="posts-feed">
+    {filteredPosts.length === 0 ? (
+        <div className="empty-feed">...</div>
+    ) : (
+        filteredPosts.map((post) => (
+            <div key={post.id} className="post-card">
+                {/* ✅ All 'post' references MUST be inside here */}
+                <div className="post-header">...</div>
+                <div className="post-content">
+                    <h3>{post.title}</h3>
+                </div>
+                
+                {/* ✅ WhatsApp button - INSIDE the map */}
+                {post.whatsapp_number ? (
+                    <button onClick={() => handleWhatsAppContact(post.whatsapp_number, post.title)}>
+                        📱 Contact Owner
+                    </button>
+                ) : (
+                    <span>No WhatsApp</span>
+                )}
+            </div>
+        ))
+    )}
+</div>
 
     if (loading) {
         return (
@@ -280,7 +287,28 @@ const Timeline = () => {
                                         </div>
                                     </div>
                                 </div>
-
+{/* Stories Section */}
+<div className="stories-section">
+    <div className="stories-wrapper">
+        <StoryCircle 
+            user={user} 
+            isCreate={true}
+            onCreateClick={() => alert('Create story feature coming soon!')}
+        />
+        {users.filter(u => u.id !== user?.id).slice(0, 12).map((u) => (
+            <StoryCircle 
+                key={u.id}
+                user={{ 
+                    name: u.username, 
+                    username: u.username, 
+                    avatar: u.avatar
+                }}
+                hasStory={true}
+                onClick={() => alert(`View ${u.username}'s story coming soon!`)}
+            />
+        ))}
+    </div>
+</div>
                                 <div className="post-content">
                                     <h3 className="post-title">{post.title}</h3>
                                     <p className="post-text">{post.description?.substring(0, 150)}...</p>

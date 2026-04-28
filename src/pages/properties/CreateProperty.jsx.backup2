@@ -443,7 +443,7 @@ const propertyData = {
             ))}
         </div>
     )}
-</div>
+
 
           {/* Submit Buttons */}
           <div className="form-actions">
@@ -460,5 +460,7 @@ const propertyData = {
   );
 }
 
-// src/pages/property-detail/PropertyDetailsPage.jsx
+
+
+
 

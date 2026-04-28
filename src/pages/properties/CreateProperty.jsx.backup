@@ -462,3 +462,48 @@ const propertyData = {
 
 // src/pages/property-detail/PropertyDetailsPage.jsx
 
+const handleWhatsAppContact = () => {
+    if (!property?.whatsapp_number) {
+        setError('📱 The property owner has not provided a WhatsApp number yet.');
+        return;
+    }
+    
+    let formattedNumber = property.whatsapp_number.replace(/\s/g, '');
+    if (formattedNumber.startsWith('0')) {
+        formattedNumber = '27' + formattedNumber.substring(1);
+    }
+    if (!formattedNumber.startsWith('27')) {
+        formattedNumber = '27' + formattedNumber;
+    }
+    
+    const message = encodeURIComponent(
+        `Hi! I'm interested in your property: ${property.title}. Is it still available?\n\n` +
+        `📍 Location: ${property.city}\n` +
+        `💰 Rent: ${formatZAR(property.monthly_rent)}/month\n` +
+        `🛏️ Bedrooms: ${property.bedrooms} | 🛁 Bathrooms: ${property.bathrooms}`
+    );
+    
+    window.open(`https://wa.me/${formattedNumber}?text=${message}`, '_blank');
+};
+
+// In the contact section
+<div className="contact-section">
+    <h3>📞 Contact Property Owner</h3>
+    {property.whatsapp_number ? (
+        <>
+            <div className="whatsapp-info">
+                <p>📱 WhatsApp: <strong>{property.whatsapp_number}</strong></p>
+                <button className="whatsapp-contact-large" onClick={handleWhatsAppContact}>
+                    <span>📱</span> Message on WhatsApp
+                </button>
+            </div>
+        </>
+    ) : (
+        <div className="no-whatsapp-message">
+            <p>⚠️ No WhatsApp number provided by the property owner.</p>
+            <button className="contact-owner-btn" onClick={() => window.location.href = `/contact-owner/${property.id}`}>
+                📧 Send Message Instead
+            </button>
+        </div>
+    )}
+</div>

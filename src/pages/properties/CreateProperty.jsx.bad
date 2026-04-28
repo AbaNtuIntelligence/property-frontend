@@ -462,3 +462,5 @@ const propertyData = {
 
 // src/pages/property-detail/PropertyDetailsPage.jsx
 
+const handleWhatsAppContact = () => {
+</div>

@@ -481,26 +481,8 @@ export default function PropertyManager() {
                 </div>
             )}
 
-            {/* Delete Confirmation Modal */}
-            {showDeleteConfirm && (
-                <div className="modal-overlay" onClick={() => setShowDeleteConfirm(null)}>
-                    <div className="modal-content small" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>Confirm Delete</h2>
-                            <button className="modal-close" onClick={() => setShowDeleteConfirm(null)}>×</button>
-                        </div>
-                        <div className="modal-body">
-                            <p>Are you sure you want to delete this property? This action cannot be undone.</p>
-                            <div className="modal-actions">
-                                <button className="cancel-btn" onClick={() => setShowDeleteConfirm(null)}>Cancel</button>
-                                <button className="delete-confirm-btn" onClick={() => handleDeleteProperty(showDeleteConfirm)}>
-                                    {loading ? 'Deleting...' : 'Yes, Delete'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+
+            
         </div>
     );
 }

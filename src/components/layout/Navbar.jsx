@@ -3,16 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import './Navbar.css';
 
-// ===== CUSTOM LOGO ICON =====
-const AbantuLogo = () => (
-  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="40" height="40" rx="10" fill="#ff385c"/>
-    <path d="M20 6C14.477 6 10 10.477 10 16C10 23 14 28 20 34C26 28 30 23 30 16C30 10.477 25.523 6 20 6Z" fill="white" opacity="0.9"/>
-    <path d="M20 11C16.686 11 14 13.686 14 17C14 20.314 16.686 23 20 23C23.314 23 26 20.314 26 17C26 13.686 23.314 11 20 11Z" fill="#ff385c"/>
-    <path d="M20 25L16 32H24L20 25Z" fill="white"/>
-  </svg>
-);
-
 // ===== ICONS =====
 const MenuIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -103,7 +93,11 @@ export default function Navbar() {
     <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
       <div className="nav-container">
         <Link to="/" className="logo" onClick={handleLinkClick}>
-          <AbantuLogo />
+          <img 
+            src="/logo.png" 
+            alt="AbaNtu Property Rentals" 
+            className="logo-image"
+          />
           <div className="logo-text-wrapper">
             <span className="logo-text">AbaNtu</span>
             <span className="logo-subtext">Property Rentals</span>

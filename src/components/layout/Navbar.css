@@ -11,7 +11,82 @@
   height: 70px; /* Fixed height */
   transition: all 0.3s ease;
 }
+/* ===== LOGO ===== */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  z-index: 1001;
+  flex-shrink: 0;
+}
 
+.logo-image {
+  height: 40px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.logo-text-wrapper {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.logo-text {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.3px;
+}
+
+.logo-text span {
+  color: #ff385c;
+}
+
+.logo-subtext {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #666;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .logo-image {
+    height: 34px;
+  }
+
+  .logo-text {
+    font-size: 1rem;
+  }
+
+  .logo-subtext {
+    font-size: 0.55rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-text-wrapper {
+    display: none; /* Hide text on very small screens, show only icon */
+  }
+
+  .logo-image {
+    height: 36px;
+  }
+}
+
+/* ===== DARK MODE ===== */
+@media (prefers-color-scheme: dark) {
+  .logo-text {
+    color: #ffffff;
+  }
+
+  .logo-subtext {
+    color: #888;
+  }
+}
 .navbar.scrolled {
   height: 64px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);

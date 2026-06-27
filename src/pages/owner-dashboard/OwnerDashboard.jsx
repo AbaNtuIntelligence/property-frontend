@@ -1,22 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import './SeekerDashboard.css';
+import './OwnerDashboard.css';
 
-export default function SeekerDashboard() {
+export default function OwnerDashboard() {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState('properties');
+  
+  const [properties, setProperties] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [earnings, setEarnings] = useState({ total: 0, monthly: 0, pending: 0 });
+  const [analytics, setAnalytics] = useState({ views: 0, inquiries: 0, bookings: 0 });
   
   const [profileForm, setProfileForm] = useState({
     fullName: '',
     phone: '',
     location: '',
     bio: '',
-    occupation: ''
+    occupation: '',
+    company: ''
   });
   
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -28,10 +34,6 @@ export default function SeekerDashboard() {
     confirmPassword: ''
   });
   
-  const [wishlist, setWishlist] = useState([]);
-  const [savedSearches, setSavedSearches] = useState([]);
-  const [rentalHistory, setRentalHistory] = useState([]);
-  
   const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
   useEffect(() => {
@@ -41,29 +43,32 @@ export default function SeekerDashboard() {
         phone: user.phone || '',
         location: user.location || '',
         bio: user.bio || '',
-        occupation: user.occupation || ''
+        occupation: user.occupation || '',
+        company: user.company || ''
       });
       setAvatarPreview(user.avatar_url || user.avatarUrl || null);
     }
-    loadUserData();
+    loadOwnerData();
   }, [user]);
 
-  const loadUserData = async () => {
+  const loadOwnerData = async () => {
     try {
       const token = localStorage.getItem('access_token');
       if (!token) return;
       
-      const [wishlistRes, searchesRes, historyRes] = await Promise.all([
-        fetch(`${API_URL}/api/user/wishlist/`, { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch(`${API_URL}/api/user/saved-searches/`, { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch(`${API_URL}/api/user/rental-history/`, { headers: { 'Authorization': `Bearer ${token}` } })
+      const [propertiesRes, bookingsRes, earningsRes, analyticsRes] = await Promise.all([
+        fetch(`${API_URL}/api/owner/properties/`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${API_URL}/api/owner/bookings/`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${API_URL}/api/owner/earnings/`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${API_URL}/api/owner/analytics/`, { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
       
-      if (wishlistRes.ok) setWishlist(await wishlistRes.json());
-      if (searchesRes.ok) setSavedSearches(await searchesRes.json());
-      if (historyRes.ok) setRentalHistory(await historyRes.json());
+      if (propertiesRes.ok) setProperties(await propertiesRes.json());
+      if (bookingsRes.ok) setBookings(await bookingsRes.json());
+      if (earningsRes.ok) setEarnings(await earningsRes.json());
+      if (analyticsRes.ok) setAnalytics(await analyticsRes.json());
     } catch (err) {
-      console.error('Error loading user data:', err);
+      console.error('Error loading owner data:', err);
     }
   };
 
@@ -106,7 +111,8 @@ export default function SeekerDashboard() {
         phone: profileForm.phone,
         location: profileForm.location,
         bio: profileForm.bio,
-        occupation: profileForm.occupation
+        occupation: profileForm.occupation,
+        company: profileForm.company
       };
       
       Object.keys(updateData).forEach(key => {
@@ -191,35 +197,18 @@ export default function SeekerDashboard() {
     navigate('/');
   };
 
+  const handleCreateProperty = () => {
+    navigate('/create-property');
+  };
+
   // SVG Icons
-  const IconUser = () => (
+  const IconHome = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
+      <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" />
     </svg>
   );
 
-  const IconLock = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="3" y="11" width="18" height="11" rx="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-  );
-
-  const IconHeart = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    </svg>
-  );
-
-  const IconSearch = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
-
-  const IconHistory = () => (
+  const IconCalendar = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <rect x="3" y="4" width="18" height="18" rx="2" />
       <line x1="16" y1="2" x2="16" y2="6" />
@@ -228,34 +217,40 @@ export default function SeekerDashboard() {
     </svg>
   );
 
-  const IconLogout = () => (
+  const IconWallet = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-      <polyline points="16 17 21 12 16 7" />
-      <line x1="21" y1="12" x2="9" y2="12" />
-    </svg>
-  );
-
-  const IconCamera = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <rect x="2" y="4" width="20" height="16" rx="2" />
-      <circle cx="12" cy="12" r="4" />
-      <line x1="17.5" y1="8.5" x2="17.51" y2="8.51" />
+      <path d="M2 8h20" />
+      <path d="M14 16h.01" />
     </svg>
   );
 
-  const IconCheck = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-      <polyline points="22 4 12 14.01 9 11.01" />
+  const IconChart = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="18" y1="20" x2="18" y2="10" />
+      <line x1="12" y1="20" x2="12" y2="4" />
+      <line x1="6" y1="20" x2="6" y2="14" />
     </svg>
   );
 
-  const IconError = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" y1="8" x2="12" y2="12" />
-      <line x1="12" y1="16" x2="12.01" y2="16" />
+  const IconPlus = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  );
+
+  const IconEdit = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  );
+
+  const IconTrash = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
     </svg>
   );
 
@@ -269,45 +264,52 @@ export default function SeekerDashboard() {
               <img src={avatarPreview} alt="Profile" />
             ) : (
               <div className="avatar-placeholder">
-                {profileForm.fullName?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                {profileForm.fullName?.charAt(0) || user?.email?.charAt(0) || 'O'}
               </div>
             )}
           </div>
-          <h3>{profileForm.fullName || user?.full_name || 'User'}</h3>
+          <h3>{profileForm.fullName || user?.full_name || 'Owner'}</h3>
           <p>{user?.email}</p>
         </div>
         
         <nav className="sidebar-nav">
           <button 
+            className={`nav-item ${activeTab === 'properties' ? 'active' : ''}`}
+            onClick={() => setActiveTab('properties')}
+          >
+            <IconHome /> My Properties
+            <span className="badge">{properties.length}</span>
+          </button>
+          <button 
+            className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('bookings')}
+          >
+            <IconCalendar /> Bookings
+            <span className="badge">{bookings.filter(b => b.status === 'pending').length}</span>
+          </button>
+          <button 
+            className={`nav-item ${activeTab === 'earnings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('earnings')}
+          >
+            <IconWallet /> Earnings
+          </button>
+          <button 
+            className={`nav-item ${activeTab === 'analytics' ? 'active' : ''}`}
+            onClick={() => setActiveTab('analytics')}
+          >
+            <IconChart /> Analytics
+          </button>
+          <button 
             className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}
             onClick={() => setActiveTab('profile')}
           >
-            <IconUser /> My Profile
+            <IconUser /> Profile Settings
           </button>
           <button 
             className={`nav-item ${activeTab === 'security' ? 'active' : ''}`}
             onClick={() => setActiveTab('security')}
           >
             <IconLock /> Security
-          </button>
-          <button 
-            className={`nav-item ${activeTab === 'wishlist' ? 'active' : ''}`}
-            onClick={() => setActiveTab('wishlist')}
-          >
-            <IconHeart /> Wishlist
-            {wishlist.length > 0 && <span className="badge">{wishlist.length}</span>}
-          </button>
-          <button 
-            className={`nav-item ${activeTab === 'searches' ? 'active' : ''}`}
-            onClick={() => setActiveTab('searches')}
-          >
-            <IconSearch /> Saved Searches
-          </button>
-          <button 
-            className={`nav-item ${activeTab === 'history' ? 'active' : ''}`}
-            onClick={() => setActiveTab('history')}
-          >
-            <IconHistory /> Rental History
           </button>
         </nav>
         
@@ -329,10 +331,121 @@ export default function SeekerDashboard() {
           </div>
         )}
         
-        {/* Profile Tab */}
+        {/* Properties Tab */}
+        {activeTab === 'properties' && (
+          <div className="tab-content">
+            <div className="tab-header">
+              <h2>My Properties</h2>
+              <button onClick={handleCreateProperty} className="create-btn">
+                <IconPlus /> List New Property
+              </button>
+            </div>
+            
+            {properties.length === 0 ? (
+              <div className="empty-state">
+                <p>You haven't listed any properties yet</p>
+                <button onClick={handleCreateProperty} className="explore-btn">
+                  List Your First Property
+                </button>
+              </div>
+            ) : (
+              <div className="properties-grid">
+                {properties.map(property => (
+                  <div key={property.id} className="property-card">
+                    <img src={property.image} alt={property.title} />
+                    <div className="property-info">
+                      <h4>{property.title}</h4>
+                      <p>R{property.price}/month</p>
+                      <div className="property-actions">
+                        <button className="edit-btn"><IconEdit /> Edit</button>
+                        <button className="delete-btn"><IconTrash /> Delete</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Bookings Tab */}
+        {activeTab === 'bookings' && (
+          <div className="tab-content">
+            <h2>Bookings</h2>
+            {bookings.length === 0 ? (
+              <div className="empty-state">
+                <p>No bookings yet</p>
+              </div>
+            ) : (
+              <div className="bookings-list">
+                {bookings.map((booking, index) => (
+                  <div key={index} className="booking-card">
+                    <div className="booking-info">
+                      <h4>{booking.propertyTitle}</h4>
+                      <p>{booking.renter} • {booking.dates}</p>
+                      <span className={`status ${booking.status}`}>{booking.status}</span>
+                    </div>
+                    <div className="booking-actions">
+                      {booking.status === 'pending' && (
+                        <>
+                          <button className="accept-btn">Accept</button>
+                          <button className="reject-btn">Reject</button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Earnings Tab */}
+        {activeTab === 'earnings' && (
+          <div className="tab-content">
+            <h2>Earnings</h2>
+            <div className="earnings-summary">
+              <div className="earning-card total">
+                <h3>Total Earnings</h3>
+                <p>R{earnings.total.toLocaleString()}</p>
+              </div>
+              <div className="earning-card monthly">
+                <h3>This Month</h3>
+                <p>R{earnings.monthly.toLocaleString()}</p>
+              </div>
+              <div className="earning-card pending">
+                <h3>Pending</h3>
+                <p>R{earnings.pending.toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <div className="tab-content">
+            <h2>Analytics</h2>
+            <div className="analytics-grid">
+              <div className="analytics-card">
+                <h3>Views</h3>
+                <p>{analytics.views.toLocaleString()}</p>
+              </div>
+              <div className="analytics-card">
+                <h3>Inquiries</h3>
+                <p>{analytics.inquiries}</p>
+              </div>
+              <div className="analytics-card">
+                <h3>Bookings</h3>
+                <p>{analytics.bookings}</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Profile Tab - Same as seeker but with company field */}
         {activeTab === 'profile' && (
           <div className="tab-content">
-            <h2>My Profile</h2>
+            <h2>Profile Settings</h2>
             <form onSubmit={handleUpdateProfile} className="profile-form">
               <div className="form-section">
                 <label>Profile Picture</label>
@@ -342,7 +455,7 @@ export default function SeekerDashboard() {
                       <img src={avatarPreview} alt="Avatar preview" />
                     ) : (
                       <div className="avatar-placeholder-large">
-                        {profileForm.fullName?.charAt(0) || 'U'}
+                        {profileForm.fullName?.charAt(0) || 'O'}
                       </div>
                     )}
                   </div>
@@ -362,6 +475,17 @@ export default function SeekerDashboard() {
                   value={profileForm.fullName}
                   onChange={handleProfileChange}
                   placeholder="Your full name"
+                />
+              </div>
+              
+              <div className="form-section">
+                <label>Company / Agency</label>
+                <input
+                  type="text"
+                  name="company"
+                  value={profileForm.company}
+                  onChange={handleProfileChange}
+                  placeholder="Your company or agency name"
                 />
               </div>
               
@@ -395,18 +519,7 @@ export default function SeekerDashboard() {
                   value={profileForm.bio}
                   onChange={handleProfileChange}
                   rows="4"
-                  placeholder="Tell us about yourself..."
-                />
-              </div>
-              
-              <div className="form-section">
-                <label>Occupation</label>
-                <input
-                  type="text"
-                  name="occupation"
-                  value={profileForm.occupation}
-                  onChange={handleProfileChange}
-                  placeholder="e.g., Software Engineer, Student"
+                  placeholder="Tell us about your properties and services..."
                 />
               </div>
               
@@ -417,7 +530,7 @@ export default function SeekerDashboard() {
           </div>
         )}
         
-        {/* Security Tab */}
+        {/* Security Tab - Same as seeker */}
         {activeTab === 'security' && (
           <div className="tab-content">
             <h2>Security Settings</h2>
@@ -453,86 +566,6 @@ export default function SeekerDashboard() {
                 {loading ? 'Updating...' : 'Update Password'}
               </button>
             </form>
-          </div>
-        )}
-        
-        {/* Wishlist Tab */}
-        {activeTab === 'wishlist' && (
-          <div className="tab-content">
-            <h2>My Wishlist</h2>
-            {wishlist.length === 0 ? (
-              <div className="empty-state">
-                <p>Your wishlist is empty</p>
-                <button onClick={() => navigate('/properties')} className="explore-btn">
-                  Explore Properties
-                </button>
-              </div>
-            ) : (
-              <div className="wishlist-grid">
-                {wishlist.map(property => (
-                  <div key={property.id} className="wishlist-card">
-                    <img src={property.image} alt={property.title} />
-                    <div className="wishlist-info">
-                      <h4>{property.title}</h4>
-                      <p>R{property.price}/month</p>
-                      <button className="remove-btn">Remove</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-        
-        {/* Saved Searches Tab */}
-        {activeTab === 'searches' && (
-          <div className="tab-content">
-            <h2>Saved Searches</h2>
-            {savedSearches.length === 0 ? (
-              <div className="empty-state">
-                <p>No saved searches yet</p>
-              </div>
-            ) : (
-              <div className="searches-list">
-                {savedSearches.map((search, index) => (
-                  <div key={index} className="search-card">
-                    <div className="search-info">
-                      <h4>{search.name}</h4>
-                      <p>{search.location}</p>
-                    </div>
-                    <button className="search-again-btn">Search Again</button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-        
-        {/* Rental History Tab */}
-        {activeTab === 'history' && (
-          <div className="tab-content">
-            <h2>Rental History</h2>
-            {rentalHistory.length === 0 ? (
-              <div className="empty-state">
-                <p>No rental history yet</p>
-                <button onClick={() => navigate('/properties')} className="explore-btn">
-                  Start Renting
-                </button>
-              </div>
-            ) : (
-              <div className="history-list">
-                {rentalHistory.map((rental, index) => (
-                  <div key={index} className="history-card">
-                    <img src={rental.propertyImage} alt={rental.propertyTitle} />
-                    <div className="history-info">
-                      <h4>{rental.propertyTitle}</h4>
-                      <p>{rental.dates}</p>
-                      <span className={`status ${rental.status}`}>{rental.status}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         )}
       </main>

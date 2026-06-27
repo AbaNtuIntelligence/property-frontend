@@ -1,141 +1,411 @@
+/* ===== PROPERTIES PAGE ===== */
 .properties-page {
-    max-width: 1200px;
+    padding: 80px 24px 40px;
+    max-width: 1280px;
     margin: 0 auto;
-    padding: 80px 20px 40px;
+    min-height: calc(100vh - 70px);
+    background: #f8f9fa;
 }
 
+/* ===== HEADER ===== */
 .properties-header {
-    text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 32px;
 }
 
 .properties-header h1 {
-    font-size: 32px;
-    margin-bottom: 20px;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 16px;
 }
 
 .filter-buttons {
     display: flex;
-    justify-content: center;
-    gap: 10px;
     flex-wrap: wrap;
+    gap: 8px;
 }
 
 .filter-btn {
-    padding: 8px 16px;
-    background: #f0f2f5;
-    border: none;
-    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    background: white;
+    border: 2px solid #f0f2f5;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 500;
     cursor: pointer;
-    font-size: 13px;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    color: #666;
+    white-space: nowrap;
+}
+
+.filter-btn:hover {
+    border-color: #d0d5dd;
+    color: #1a1a1a;
 }
 
 .filter-btn.active {
-    background: #1877f2;
+    background: #ff385c;
+    border-color: #ff385c;
     color: white;
 }
 
+.filter-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+}
+
+/* ===== LOADING ===== */
+.properties-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 16px;
+}
+
+.properties-loading svg {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.properties-loading p {
+    color: #888;
+    font-size: 0.95rem;
+}
+
+/* ===== PROPERTIES GRID ===== */
 .properties-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 24px;
 }
 
+/* ===== PROPERTY CARD ===== */
 .property-card {
     background: white;
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
+    border: 1px solid #f0f2f5;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
 }
 
 .property-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+    border-color: #e5e7eb;
 }
 
 .property-image {
     height: 200px;
     overflow: hidden;
+    background: #f0f2f5;
+    position: relative;
 }
 
 .property-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.property-card:hover .property-image img {
+    transform: scale(1.05);
 }
 
 .no-image {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 48px;
-    color: white;
+    background: #f0f2f5;
 }
 
+.no-image svg {
+    stroke: #ccc;
+    width: 40px;
+    height: 40px;
+}
+
+/* ===== PROPERTY INFO ===== */
 .property-info {
-    padding: 16px;
+    padding: 16px 20px 20px;
 }
 
-.property-info h3 {
-    margin: 0 0 8px;
-    font-size: 16px;
+.property-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-.price {
-    font-size: 18px;
-    font-weight: bold;
-    color: #28a745;
-    margin-bottom: 8px;
+.property-price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ff385c;
+    margin: 0 0 4px;
 }
 
-.price span {
-    font-size: 12px;
-    font-weight: normal;
-    color: #65676b;
+.property-price span {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: #888;
 }
 
-.location {
-    color: #65676b;
-    font-size: 13px;
-    margin-bottom: 8px;
-}
-
-.features {
+.property-location {
     display: flex;
-    gap: 16px;
-    font-size: 12px;
-    color: #65676b;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    color: #888;
+    margin: 0 0 12px;
 }
 
-.properties-loading {
-    text-align: center;
-    padding: 100px;
+.property-location svg {
+    stroke: #888;
+    flex-shrink: 0;
 }
 
+.property-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f2f5;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.property-features span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.property-features svg {
+    stroke: #666;
+}
+
+.inverter-feature {
+    color: #3730a3;
+}
+
+.inverter-feature svg {
+    stroke: #3730a3;
+}
+
+/* ===== NO PROPERTIES ===== */
 .no-properties {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
     text-align: center;
-    padding: 60px;
+    gap: 8px;
     grid-column: 1 / -1;
-    color: #65676b;
+}
+
+.no-properties svg {
+    stroke: #ccc;
+}
+
+.no-properties h3 {
+    font-size: 1.2rem;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.no-properties p {
+    color: #888;
+    margin: 0;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+    .properties-page {
+        padding: 80px 16px 32px;
+    }
 }
 
 @media (max-width: 768px) {
+    .properties-page {
+        padding: 70px 12px 24px;
+    }
+
+    .properties-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .filter-buttons {
+        gap: 6px;
+    }
+
+    .filter-btn {
+        padding: 6px 14px;
+        font-size: 0.8rem;
+    }
+
+    .properties-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 16px;
+    }
+
+    .property-image {
+        height: 160px;
+    }
+}
+
+@media (max-width: 480px) {
+    .properties-page {
+        padding: 60px 8px 16px;
+    }
+
+    .filter-buttons {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        gap: 4px;
+    }
+
+    .filter-btn {
+        flex-shrink: 0;
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+
     .properties-grid {
         grid-template-columns: 1fr;
     }
-    
-    .filter-buttons {
+
+    .property-image {
+        height: 180px;
+    }
+
+    .property-title {
+        font-size: 0.95rem;
+    }
+
+    .property-price {
+        font-size: 1.05rem;
+    }
+
+    .property-features {
+        font-size: 0.8rem;
         gap: 8px;
     }
-    
+}
+
+/* ===== DARK MODE ===== */
+@media (prefers-color-scheme: dark) {
+    .properties-page {
+        background: #1a1a1a;
+    }
+
+    .properties-header h1 {
+        color: #ffffff;
+    }
+
     .filter-btn {
-        padding: 6px 12px;
-        font-size: 12px;
+        background: #262626;
+        border-color: #333;
+        color: #888;
+    }
+
+    .filter-btn:hover {
+        border-color: #444;
+        color: #e5e7eb;
+    }
+
+    .filter-btn.active {
+        background: #ff385c;
+        border-color: #ff385c;
+        color: white;
+    }
+
+    .property-card {
+        background: #262626;
+        border-color: #333;
+    }
+
+    .property-card:hover {
+        border-color: #444;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .property-title {
+        color: #ffffff;
+    }
+
+    .property-price {
+        color: #ff385c;
+    }
+
+    .property-price span {
+        color: #666;
+    }
+
+    .property-location {
+        color: #888;
+    }
+
+    .property-location svg {
+        stroke: #888;
+    }
+
+    .property-features {
+        border-top-color: #333;
+        color: #888;
+    }
+
+    .property-features svg {
+        stroke: #888;
+    }
+
+    .inverter-feature {
+        color: #818cf8;
+    }
+
+    .inverter-feature svg {
+        stroke: #818cf8;
+    }
+
+    .no-image {
+        background: #1f1f1f;
+    }
+
+    .no-image svg {
+        stroke: #555;
+    }
+
+    .no-properties h3 {
+        color: #ffffff;
+    }
+
+    .no-properties p {
+        color: #888;
+    }
+
+    .properties-loading p {
+        color: #888;
+    }
+
+    .properties-loading svg {
+        stroke: #ff385c;
     }
 }

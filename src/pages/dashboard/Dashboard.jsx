@@ -27,7 +27,6 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [propertiesFetched, setPropertiesFetched] = useState(false);
   
-  // Edit/Delete states
   const [editingProperty, setEditingProperty] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
@@ -45,7 +44,108 @@ export default function Dashboard() {
   
   const fetchRef = useRef(false);
 
-  // Fetch fresh user data on mount
+  // SVG Icons
+  const IconUser = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+
+  const IconHome = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" />
+    </svg>
+  );
+
+  const IconList = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+
+  const IconLogout = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+  );
+
+  const IconCamera = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <circle cx="12" cy="12" r="4" />
+      <line x1="17.5" y1="8.5" x2="17.51" y2="8.51" />
+    </svg>
+  );
+
+  const IconPlus = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  );
+
+  const IconEdit = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  );
+
+  const IconTrash = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  );
+
+  const IconEye = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+
+  const IconCheck = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
+  );
+
+  const IconError = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
+    </svg>
+  );
+
+  const IconInverter = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+  );
+
+  const IconArrowRight = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
+  );
+
+  const IconClose = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+
   const loadUserData = useCallback(async () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -91,7 +191,6 @@ export default function Dashboard() {
     }
   }, [navigate, refreshUser]);
 
-  // Fetch properties only once when needed
   const fetchMyProperties = useCallback(async () => {
     if (fetchRef.current) return;
     fetchRef.current = true;
@@ -130,7 +229,6 @@ export default function Dashboard() {
     }
   }, [activeTab, profileData.user_type, propertiesFetched, fetchMyProperties]);
 
-  // Navigation handlers
   const handleExploreProperties = () => navigate('/timeline');
   const handleListProperty = () => navigate('/property/new');
   const handleViewProperty = (propertyId) => navigate(`/property/${propertyId}`);
@@ -139,7 +237,6 @@ export default function Dashboard() {
     navigate('/');
   };
 
-  // Profile handlers
   const handleProfileChange = (e) => {
     setProfileData({
       ...profileData,
@@ -228,7 +325,6 @@ export default function Dashboard() {
     }
   };
 
-  // Property CRUD handlers
   const handleEditProperty = (property) => {
     setEditingProperty(property);
     setEditFormData({
@@ -344,32 +440,43 @@ export default function Dashboard() {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1>Welcome to Your Dashboard, {profileData.first_name || profileData.username}! 👋</h1>
+        <h1>
+          Welcome to Your Dashboard, {profileData.first_name || profileData.username}!
+        </h1>
         <div className="dashboard-actions">
           <button onClick={handleExploreProperties} className="btn-explore">
-            🔍 Explore Properties
+            <IconEye /> Explore Properties
           </button>
           {profileData.user_type === 'owner' && (
             <button onClick={handleListProperty} className="btn-list">
-              📝 List Property
+              <IconPlus /> List Property
             </button>
           )}
           <button onClick={handleLogout} className="btn-logout">
-            🚪 Logout
+            <IconLogout /> Logout
           </button>
         </div>
       </div>
 
       <div className="dashboard-tabs">
-        <button className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
-          📊 Overview
+        <button 
+          className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`} 
+          onClick={() => setActiveTab('overview')}
+        >
+          <IconHome /> Overview
         </button>
-        <button className={`tab-btn ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
-          👤 Manage Profile
+        <button 
+          className={`tab-btn ${activeTab === 'profile' ? 'active' : ''}`} 
+          onClick={() => setActiveTab('profile')}
+        >
+          <IconUser /> Manage Profile
         </button>
         {profileData.user_type === 'owner' && (
-          <button className={`tab-btn ${activeTab === 'properties' ? 'active' : ''}`} onClick={() => setActiveTab('properties')}>
-            🏠 My Properties ({myProperties.length})
+          <button 
+            className={`tab-btn ${activeTab === 'properties' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('properties')}
+          >
+            <IconList /> My Properties ({myProperties.length})
           </button>
         )}
       </div>
@@ -379,27 +486,39 @@ export default function Dashboard() {
         {activeTab === 'overview' && (
           <div className="dashboard-grid">
             <div className="dashboard-card" onClick={handleExploreProperties}>
-              <div className="card-icon">🏠</div>
+              <div className="card-icon">
+                <IconEye />
+              </div>
               <h3>Explore Properties</h3>
               <p>Browse through thousands of available properties</p>
-              <button className="card-btn">Start Exploring →</button>
+              <button className="card-btn">
+                Start Exploring <IconArrowRight />
+              </button>
             </div>
             
             {profileData.user_type === 'owner' && (
               <div className="dashboard-card" onClick={handleListProperty}>
-                <div className="card-icon">📝</div>
+                <div className="card-icon">
+                  <IconPlus />
+                </div>
                 <h3>List Your Property</h3>
                 <p>Reach thousands of potential tenants</p>
-                <button className="card-btn">List Now →</button>
+                <button className="card-btn">
+                  List Now <IconArrowRight />
+                </button>
               </div>
             )}
             
             {profileData.user_type === 'owner' && (
               <div className="dashboard-card" onClick={() => setActiveTab('properties')}>
-                <div className="card-icon">📊</div>
+                <div className="card-icon">
+                  <IconList />
+                </div>
                 <h3>My Properties</h3>
                 <p>View and manage your listed properties</p>
-                <button className="card-btn">Manage →</button>
+                <button className="card-btn">
+                  Manage <IconArrowRight />
+                </button>
               </div>
             )}
           </div>
@@ -410,8 +529,16 @@ export default function Dashboard() {
           <div className="profile-section">
             <h2>Manage Profile</h2>
             
-            {message && <div className="success-message">{message}</div>}
-            {error && <div className="error-message">{error}</div>}
+            {message && (
+              <div className="success-message">
+                <IconCheck /> {message}
+              </div>
+            )}
+            {error && (
+              <div className="error-message">
+                <IconError /> {error}
+              </div>
+            )}
             
             <form onSubmit={handleUpdateProfile} className="profile-form">
               <div className="form-group avatar-group">
@@ -428,7 +555,7 @@ export default function Dashboard() {
                   </div>
                   <div className="avatar-upload-buttons">
                     <label className="upload-btn">
-                      📸 Change Photo
+                      <IconCamera /> Change Photo
                       <input
                         type="file"
                         accept="image/*"
@@ -437,7 +564,7 @@ export default function Dashboard() {
                       />
                     </label>
                   </div>
-                  <p className="upload-hint">JPEG, PNG, GIF up to 5MB</p>
+                  <p className="upload-hint">JPEG, PNG up to 5MB</p>
                 </div>
               </div>
 
@@ -501,7 +628,7 @@ export default function Dashboard() {
                 <label>Account Type</label>
                 <input
                   type="text"
-                  value={profileData.user_type === 'owner' ? '🏠 Property Owner' : '🔍 Property Seeker'}
+                  value={profileData.user_type === 'owner' ? 'Property Owner' : 'Property Seeker'}
                   disabled
                   className="disabled-input"
                 />
@@ -522,7 +649,7 @@ export default function Dashboard() {
             <div className="properties-header">
               <h2>My Properties</h2>
               <button onClick={handleListProperty} className="add-property-btn">
-                + Add New Property
+                <IconPlus /> Add New Property
               </button>
             </div>
             
@@ -530,11 +657,11 @@ export default function Dashboard() {
               <div className="loading-properties">Loading your properties...</div>
             ) : myProperties.length === 0 ? (
               <div className="no-properties">
-                <span>🏠</span>
+                <IconList />
                 <h3>No properties yet</h3>
                 <p>You haven't listed any properties. Click below to get started!</p>
                 <button onClick={handleListProperty} className="list-property-btn">
-                  List Your First Property
+                  <IconPlus /> List Your First Property
                 </button>
               </div>
             ) : (
@@ -545,28 +672,44 @@ export default function Dashboard() {
                       {property.images && property.images.length > 0 ? (
                         <img src={property.images[0].image || property.images[0]} alt={property.title} />
                       ) : (
-                        <div className="no-image-small">🏠</div>
+                        <div className="no-image-small">
+                          <IconHome />
+                        </div>
                       )}
                     </div>
                     <div className="property-details">
                       <h3>{property.title}</h3>
                       <p className="property-price">{formatZAR(property.monthly_rent)}<span>/month</span></p>
-                      <p className="property-location">📍 {property.city}</p>
+                      <p className="property-location">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                          <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        {property.city}
+                      </p>
                       <div className="property-status">
                         <span className={`status-badge ${property.status || 'available'}`}>
                           {property.status || 'available'}
                         </span>
+                        {property.has_inverter && (
+                          <span className="inverter-badge">
+                            <IconInverter /> Inverter
+                          </span>
+                        )}
                       </div>
                     </div>
+
+
+                    
                     <div className="property-actions">
                       <button className="edit-property-btn" onClick={() => handleEditProperty(property)}>
-                        ✏️ Edit
+                        <IconEdit /> Edit
                       </button>
                       <button className="delete-property-btn" onClick={() => handleDeleteProperty(property.id)}>
-                        🗑️ Delete
+                        <IconTrash /> Delete
                       </button>
                       <button className="view-property-btn" onClick={() => handleViewProperty(property.id)}>
-                        👁️ View
+                        <IconEye /> View
                       </button>
                     </div>
                   </div>
@@ -583,7 +726,9 @@ export default function Dashboard() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Edit Property</h2>
-              <button className="modal-close" onClick={() => setShowEditModal(false)}>×</button>
+              <button className="modal-close" onClick={() => setShowEditModal(false)}>
+                <IconClose />
+              </button>
             </div>
             <div className="modal-body">
               <form onSubmit={handleUpdateProperty} className="edit-property-form">
@@ -675,7 +820,7 @@ export default function Dashboard() {
                       checked={editFormData.has_inverter}
                       onChange={(e) => setEditFormData({...editFormData, has_inverter: e.target.checked})}
                     />
-                    🔋 Inverter Backup
+                    <IconInverter /> Inverter Backup
                   </label>
                 </div>
                 
@@ -699,7 +844,9 @@ export default function Dashboard() {
           <div className="modal-content small" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Confirm Delete</h2>
-              <button className="modal-close" onClick={() => setShowDeleteConfirm(null)}>×</button>
+              <button className="modal-close" onClick={() => setShowDeleteConfirm(null)}>
+                <IconClose />
+              </button>
             </div>
             <div className="modal-body">
               <p>Are you sure you want to delete this property? This action cannot be undone.</p>

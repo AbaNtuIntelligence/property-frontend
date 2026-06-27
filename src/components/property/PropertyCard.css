@@ -1,54 +1,353 @@
+/* ===== PROPERTY CARD ===== */
 .property-card {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    background: white;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f0f2f5;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
 }
 
 .property-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  border-color: transparent;
 }
 
-.property-image {
-    height: 200px;
-    overflow: hidden;
+.property-card.compact {
+  border-radius: 12px;
 }
 
-.property-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.property-card.compact .card-image {
+  height: 160px;
 }
 
-.property-info {
-    padding: 1rem;
+.property-card.compact .card-content {
+  padding: 12px 16px;
 }
 
-.property-info h3 {
-    margin: 0 0 0.5rem;
-    font-size: 1.1rem;
-    color: #333;
+.property-card.compact .card-title {
+  font-size: 0.95rem;
 }
 
-.location {
-    color: #666;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
+.property-card.compact .card-price {
+  font-size: 1rem;
 }
 
-.price {
-    font-weight: 600;
-    color: #007bff;
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
+/* ===== CARD IMAGE ===== */
+.card-image {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  background: #f0ede9;
 }
 
-.details {
-    display: flex;
-    gap: 1rem;
-    color: #999;
-    font-size: 0.85rem;
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.property-card:hover .card-image img {
+  transform: scale(1.05);
+}
+
+/* ===== CARD BADGES ===== */
+.card-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 30px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  backdrop-filter: blur(10px);
+  z-index: 2;
+}
+
+.card-badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+.featured-badge {
+  background: rgba(255, 56, 92, 0.9);
+  color: white;
+}
+
+.featured-badge svg {
+  fill: white;
+}
+
+.inverter-badge {
+  top: 48px;
+  background: rgba(245, 158, 11, 0.9);
+  color: white;
+}
+
+.water-badge {
+  top: 84px;
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+}
+
+.image-count {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 30px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  z-index: 2;
+}
+
+.image-count svg {
+  stroke: white;
+}
+
+/* ===== CARD LIKE BUTTON ===== */
+.card-like {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.card-like:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.card-like svg {
+  width: 18px;
+  height: 18px;
+  transition: all 0.2s ease;
+}
+
+.like-indicator {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.like-indicator.active {
+  background: rgba(255, 56, 92, 0.15);
+  transform: scale(1.2);
+}
+
+.card-like .liked svg {
+  fill: #ff385c;
+  stroke: #ff385c;
+}
+
+/* ===== CARD CONTENT ===== */
+.card-content {
+  padding: 16px 20px 20px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+
+.card-rating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  white-space: nowrap;
+}
+
+.card-rating svg {
+  width: 14px;
+  height: 14px;
+  fill: #f59e0b;
+  stroke: #f59e0b;
+}
+
+.card-location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #666;
+  font-size: 0.85rem;
+  margin: 0 0 10px;
+}
+
+.card-location svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.card-details {
+  display: flex;
+  gap: 16px;
+  color: #666;
+  font-size: 0.8rem;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.card-details span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-details svg {
+  width: 14px;
+  height: 14px;
+  stroke: #666;
+}
+
+/* ===== CARD FOOTER ===== */
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid #f0f2f5;
+}
+
+.card-price {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.card-price span {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #666;
+}
+
+.card-cta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  background: transparent;
+  border: none;
+  color: #ff385c;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 30px;
+  font-family: inherit;
+}
+
+.card-cta:hover {
+  background: rgba(255, 56, 92, 0.08);
+}
+
+.card-cta svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s ease;
+}
+
+.card-cta:hover svg {
+  transform: translateX(4px);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .card-image {
+    height: 180px;
+  }
+
+  .card-content {
+    padding: 14px 16px 16px;
+  }
+
+  .card-title {
+    font-size: 0.95rem;
+  }
+
+  .card-price {
+    font-size: 1rem;
+  }
+
+  .card-details {
+    gap: 10px;
+    font-size: 0.75rem;
+  }
+
+  .card-badge {
+    font-size: 0.6rem;
+    padding: 3px 10px;
+  }
+
+  .inverter-badge {
+    top: 44px;
+  }
+
+  .water-badge {
+    top: 76px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-image {
+    height: 160px;
+  }
+
+  .card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .card-cta {
+    padding: 4px 0;
+  }
 }

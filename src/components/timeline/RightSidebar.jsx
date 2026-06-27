@@ -1,143 +1,144 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import './Sidebar.css';
-import './Right-Sidebar.css';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import './Sidebars.css';
 
-const formatZAR = (amount) => {
-    return new Intl.NumberFormat('en-ZA', {
-        style: 'currency',
-        currency: 'ZAR',
-        minimumFractionDigits: 0,
-    }).format(amount);
-};
+const TrendingIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+    <polyline points="17 6 23 6 23 12" />
+  </svg>
+);
 
-export default function RightSidebar({ user }) {
-  const navigate = useNavigate();
-  const [trendingProperties, setTrendingProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+const StarIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
 
-  useEffect(() => {
-    fetchTrendingProperties();
-  }, []);
+const GlobeIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="2" y1="12" x2="22" y2="12" />
+    <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+  </svg>
+);
 
-  const fetchTrendingProperties = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/properties/`);
-      if (response.ok) {
-        const data = await response.json();
-        // Get properties WITH images first, then sort by price (highest first as trending)
-        const withImages = data.filter(p => p.images && p.images.length > 0);
-        const trending = withImages.slice(0, 5);
-        setTrendingProperties(trending);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+const TrendingData = [
+  { id: 1, title: 'Clifton Beach Villa', location: 'Cape Town', price: 'R8,500', image: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=60&h=60&fit=crop' },
+  { id: 2, title: 'Franschhoek Estate', location: 'Winelands', price: 'R12,000', image: 'https://images.unsplash.com/photo-1542401886-65d6c61db217?w=60&h=60&fit=crop' },
+  { id: 3, title: 'Kruger Bush Lodge', location: 'Mpumalanga', price: 'R15,000', image: 'https://images.unsplash.com/photo-1616423640778-28d1b53229bd?w=60&h=60&fit=crop' },
+  { id: 4, title: 'Umhlanga Penthouse', location: 'Durban', price: 'R5,500', image: 'https://images.unsplash.com/photo-1590114518871-9b5f5a6f7b5a?w=60&h=60&fit=crop' },
+  { id: 5, title: 'Plettenberg Bay', location: 'Garden Route', price: 'R7,200', image: 'https://images.unsplash.com/photo-1598948485426-ee9815f249d8?w=60&h=60&fit=crop' },
+];
 
-  const getImageUrl = (img) => {
-    if (!img) return null;
-    const imgUrl = img.image || img;
-    if (!imgUrl) return null;
-    return imgUrl.startsWith('http') ? imgUrl : `${API_URL}${imgUrl}`;
-  };
+const SuggestedHosts = [
+  { id: 1, name: 'Thando Ndlovu', location: 'Cape Town', avatar: 'https://images.unsplash.com/photo-1506863530036-1efeddceb993?w=40&h=40&fit=crop', properties: 8 },
+  { id: 2, name: 'Johan van der Merwe', location: 'Franschhoek', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop', properties: 5 },
+  { id: 3, name: 'Priya Naidoo', location: 'Durban', avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=40&h=40&fit=crop', properties: 4 },
+  { id: 4, name: 'Sipho Dlamini', location: 'Mbombela', avatar: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=40&h=40&fit=crop', properties: 3 },
+];
 
+const Destinations = [
+  { city: 'Cape Town', flag: '🇿🇦', count: 345 },
+  { city: 'Franschhoek', flag: '🇿🇦', count: 89 },
+  { city: 'Durban', flag: '🇿🇦', count: 234 },
+  { city: 'Kruger Park', flag: '🇿🇦', count: 67 },
+  { city: 'Plettenberg Bay', flag: '🇿🇦', count: 123 },
+  { city: 'Johannesburg', flag: '🇿🇦', count: 456 },
+];
+
+export default function RightSidebar() {
   return (
     <div className="right-sidebar">
-      {/* Welcome Card */}
-      {!user && (
-        <div className="sidebar-card welcome-card">
-          <div className="welcome-emoji">🇿🇦</div>
-          <h3>Find Your Home</h3>
-          <p>Thousands of properties across SA</p>
-          <div className="welcome-buttons">
-            <Link to="/login" className="btn-outline">Login</Link>
-            <Link to="/register" className="btn-primary">Sign Up</Link>
-          </div>
+      {/* Trending Properties */}
+      <div className="sidebar-card">
+        <div className="sidebar-card-header">
+          <h3>
+            <TrendingIcon />
+            Trending in SA
+          </h3>
+          <Link to="/trending" className="see-all">View All</Link>
         </div>
-      )}
-
-      {/* Trending Properties - WITH IMAGES */}
-      <div className="sidebar-card trending-card">
-        <div className="section-title">
-          <span className="title-icon">📈</span>
-          <h3>Trending Now</h3>
-          <Link to="/properties" className="see-all">See all</Link>
-        </div>
-
-        {loading ? (
-          <div className="loading-skeleton">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="skeleton-trending"></div>
-            ))}
-          </div>
-        ) : trendingProperties.length === 0 ? (
-          <div className="empty-state">
-            <span>🔥</span>
-            <p>No trending properties yet</p>
-          </div>
-        ) : (
-          <div className="trending-list">
-            {trendingProperties.map((property, idx) => (
-              <div 
-                key={property.id} 
-                className="trending-item"
-                onClick={() => navigate(`/property/${property.id}`)}
-              >
-                <div className="trending-rank">{idx + 1}</div>
-                <div className="trending-image">
-                  <img 
-                    src={getImageUrl(property.images?.[0])} 
-                    alt={property.title}
-                    onError={(e) => { e.target.src = 'https://placehold.co/50x50/28a745/white?text=🏠'; }}
-                  />
-                </div>
-                <div className="trending-info">
-                  <h4>{property.title}</h4>
-                  <p className="trending-location">📍 {property.city}</p>
-                  <p className="trending-price">{formatZAR(property.monthly_rent)}</p>
-                </div>
-                <div className="trending-hot">🔥</div>
+        <div className="trending-list">
+          {TrendingData.map((item, index) => (
+            <Link key={item.id} to={`/property/${item.id}`} className="trending-item">
+              <span className="trending-rank">#{index + 1}</span>
+              <img src={item.image} alt={item.title} className="trending-image" />
+              <div className="trending-info">
+                <h4>{item.title}</h4>
+                <p>{item.location}</p>
+                <span className="trending-price">{item.price}</span>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Quick Filters */}
-      <div className="sidebar-card filters-card">
-        <div className="section-title">
-          <span className="title-icon">🎯</span>
-          <h3>Quick Filters</h3>
-        </div>
-        <div className="filters-grid">
-          <button className="filter-pill" onClick={() => navigate('/search?price=0-10000')}>
-            Under R10k
-          </button>
-          <button className="filter-pill" onClick={() => navigate('/search?bedrooms=2')}>
-            2+ Bedrooms
-          </button>
-          <button className="filter-pill" onClick={() => navigate('/search?amenity=inverter')}>
-            🔋 Inverter
-          </button>
-          <button className="filter-pill" onClick={() => navigate('/search?pet=true')}>
-            🐾 Pet Friendly
-          </button>
+            </Link>
+          ))}
         </div>
       </div>
 
-      {/* Tip Card */}
-      <div className="sidebar-card tip-card">
-        <div className="tip-emoji">💡</div>
-        <h4>Pro Tip</h4>
-        <p>Properties with clear photos get <strong>3x more inquiries</strong></p>
-        <button className="tip-action" onClick={() => navigate('/property/new')}>
-          List Your Property →
-        </button>
+      {/* Suggested Hosts */}
+      <div className="sidebar-card">
+        <div className="sidebar-card-header">
+          <h3>
+            <StarIcon />
+            Top Hosts
+          </h3>
+          <Link to="/hosts" className="see-all">See All</Link>
+        </div>
+        <div className="suggested-list">
+          {SuggestedHosts.map((host) => (
+            <div key={host.id} className="suggested-item">
+              <img src={host.avatar} alt={host.name} className="suggested-avatar" />
+              <div className="suggested-info">
+                <h4>{host.name}</h4>
+                <p>{host.location}</p>
+                {host.properties > 5 && (
+                  <span className="superhost-badge">Superhost</span>
+                )}
+              </div>
+              <button className="follow-btn">Follow</button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Special Offer Ad */}
+      <div className="sidebar-card ad-card">
+        <div className="ad-badge">Sponsored</div>
+        <div className="ad-content">
+          <span className="ad-label">Special Offer</span>
+          <h4>List your property</h4>
+          <p>Reach millions of travelers in 2026</p>
+          <button className="ad-button">Become a Host →</button>
+        </div>
+      </div>
+
+      {/* Popular Destinations */}
+      <div className="sidebar-card">
+        <div className="sidebar-card-header">
+          <h3>
+            <GlobeIcon />
+            Destinations
+          </h3>
+          <Link to="/destinations" className="see-all">All</Link>
+        </div>
+        <div className="destinations-grid">
+          {Destinations.map((dest) => (
+            <Link key={dest.city} to={`/search?location=${dest.city}`} className="destination-item">
+              <span className="destination-flag">{dest.flag}</span>
+              <span className="destination-city">{dest.city}</span>
+              <span className="destination-count">{dest.count} stays</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Second Ad */}
+      <div className="sidebar-card ad-card secondary">
+        <div className="ad-badge">Promoted</div>
+        <div className="ad-content">
+          <h4>Travel Insurance</h4>
+          <p>From R99/day. Cancel anytime.</p>
+          <button className="ad-button">Learn More →</button>
+        </div>
       </div>
     </div>
   );

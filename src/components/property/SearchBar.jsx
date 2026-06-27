@@ -1,127 +1,113 @@
-// src/components/search/SearchBar.jsx
-import React, { useState } from "react";
-import "./SearchBar.css";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { SearchIcon, MapPinIcon } from '../icons';
+import './SearchBar.css';
 
-export default function SearchBar({ onSearch, initialLocation = "" }) {
-  const [location, setLocation] = useState(initialLocation);
-  const [propertyType, setPropertyType] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [bedrooms, setBedrooms] = useState("");
+export default function SearchBar({ 
+  onSearch, 
+  placeholder = 'Search properties...',
+  initialQuery = '',
+  compact = false 
+}) {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState(initialQuery);
+  const [location, setLocation] = useState('');
+  const [propertyType, setPropertyType] = useState('');
+  const [priceRange, setPriceRange] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    const searchParams = {
-      location: location.trim(),
-      propertyType,
-      minPrice: minPrice ? parseInt(minPrice) : null,
-      maxPrice: maxPrice ? parseInt(maxPrice) : null,
-      bedrooms: bedrooms ? parseInt(bedrooms) : null,
-    };
-    
-    // Remove empty params
-    Object.keys(searchParams).forEach(key => {
-      if (!searchParams[key]) delete searchParams[key];
-    });
-    
-    onSearch(searchParams);
-  };
+    const searchParams = new URLSearchParams();
+    if (query) searchParams.append('q', query);
+    if (location) searchParams.append('location', location);
+    if (propertyType) searchParams.append('type', propertyType);
+    if (priceRange) searchParams.append('price', priceRange);
 
-  const handleClearFilters = () => {
-    setLocation("");
-    setPropertyType("");
-    setMinPrice("");
-    setMaxPrice("");
-    setBedrooms("");
-    onSearch({});
+    if (onSearch) {
+      onSearch(searchParams);
+    } else {
+      navigate(`/properties?${searchParams.toString()}`);
+    }
   };
 
   return (
-    <div className="search-bar-container">
-      <form className="search-bar" onSubmit={handleSubmit}>
-        <div className="search-input-group">
-          <div className="search-field">
-            <span className="search-icon">📍</span>
-            <input
-              type="text"
-              placeholder="Search by city or suburb..."
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
-          </div>
-          
-          <button type="submit" className="search-btn">
-            🔍 Search
-          </button>
-          
+    <form className={`search-bar ${compact ? 'compact' : ''} ${isExpanded ? 'expanded' : ''}`} onSubmit={handleSubmit}>
+      <div className="search-bar-main">
+        <div className="search-input-wrapper">
+          <SearchIcon />
+          <input
+            type="text"
+            placeholder={placeholder}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="search-input"
+          />
+        </div>
+
+        {!compact && (
           <button 
             type="button" 
-            className="filter-toggle-btn"
+            className="search-toggle"
             onClick={() => setIsExpanded(!isExpanded)}
           >
-            {isExpanded ? "▲ Less filters" : "▼ More filters"}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
           </button>
-        </div>
-        
-        {isExpanded && (
-          <div className="search-filters">
-            <div className="filter-row">
-              <div className="filter-field">
-                <label>Property Type</label>
-                <select value={propertyType} onChange={(e) => setPropertyType(e.target.value)}>
-                  <option value="">All Types</option>
-                  <option value="apartment">Apartment</option>
-                  <option value="house">House</option>
-                  <option value="condo">Condo</option>
-                  <option value="studio">Studio</option>
-                  <option value="townhouse">Townhouse</option>
-                </select>
-              </div>
-              
-              <div className="filter-field">
-                <label>Bedrooms</label>
-                <select value={bedrooms} onChange={(e) => setBedrooms(e.target.value)}>
-                  <option value="">Any</option>
-                  <option value="1">1+ Bedroom</option>
-                  <option value="2">2+ Bedrooms</option>
-                  <option value="3">3+ Bedrooms</option>
-                  <option value="4">4+ Bedrooms</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="filter-row">
-              <div className="filter-field">
-                <label>Min Price (R)</label>
-                <input
-                  type="number"
-                  placeholder="Min"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                />
-              </div>
-              
-              <div className="filter-field">
-                <label>Max Price (R)</label>
-                <input
-                  type="number"
-                  placeholder="Max"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                />
-              </div>
-            </div>
-            
-            <div className="filter-actions">
-              <button type="button" className="clear-filters-btn" onClick={handleClearFilters}>
-                Clear All Filters
-              </button>
-            </div>
-          </div>
         )}
-      </form>
-    </div>
+
+        <button type="submit" className="search-submit">
+          <SearchIcon />
+          {!compact && <span>Search</span>}
+        </button>
+      </div>
+
+      {!compact && isExpanded && (
+        <div className="search-bar-filters">
+          <div className="filter-group">
+            <MapPinIcon />
+            <input
+              type="text"
+              placeholder="Location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="filter-input"
+            />
+          </div>
+
+          <select 
+            className="filter-select"
+            value={propertyType}
+            onChange={(e) => setPropertyType(e.target.value)}
+          >
+            <option value="">Property Type</option>
+            <option value="apartment">Apartment</option>
+            <option value="house">House</option>
+            <option value="villa">Villa</option>
+            <option value="cabin">Cabin</option>
+            <option value="townhouse">Townhouse</option>
+          </select>
+
+          <select 
+            className="filter-select"
+            value={priceRange}
+            onChange={(e) => setPriceRange(e.target.value)}
+          >
+            <option value="">Price Range</option>
+            <option value="0-5000">R0 – R5,000</option>
+            <option value="5000-10000">R5,000 – R10,000</option>
+            <option value="10000-15000">R10,000 – R15,000</option>
+            <option value="15000-20000">R15,000 – R20,000</option>
+            <option value="20000-30000">R20,000 – R30,000</option>
+            <option value="30000-50000">R30,000 – R50,000</option>
+            <option value="50000+">R50,000+</option>
+          </select>
+        </div>
+      )}
+    </form>
   );
 }

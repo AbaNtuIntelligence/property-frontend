@@ -1,91 +1,239 @@
-/* StoryCircle Component */
+/* ===== STORY CIRCLE ===== */
 .story-circle {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    flex-shrink: 0;
-    width: 70px;
-    transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  min-width: 72px;
+  transition: transform 0.2s ease;
+}
+
+.story-circle:hover {
+  transform: translateY(-2px);
 }
 
 .story-circle:active {
-    transform: scale(0.95);
+  transform: scale(0.95);
 }
 
-/* Story Avatar */
+/* ===== STORY AVATAR WRAPPER ===== */
+.story-avatar-wrapper {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  padding: 3px;
+  background: #f0f2f5;
+  flex-shrink: 0;
+}
+
+.story-avatar-wrapper.has-story {
+  background: conic-gradient(
+    from 0deg,
+    #f09433,
+    #e6683c,
+    #dc2743,
+    #cc2366,
+    #bc1888,
+    #f09433
+  );
+  padding: 2.5px;
+}
+
+/* ===== STORY AVATAR ===== */
 .story-avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: linear-gradient(45deg, #f09433, #d62976, #962fbf, #4f5bd5);
-    padding: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
 
-.story-avatar img,
-.story-avatar .avatar-placeholder {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    background: white;
+.story-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-/* Avatar placeholder for users without images */
-.avatar-placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
-    font-weight: bold;
-    color: #1877f2;
-    background: #e7f1ff;
+.avatar-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
-/* Has story indicator */
-.story-avatar.has-story {
-    background: linear-gradient(45deg, #f09433, #d62976, #962fbf, #4f5bd5);
+/* ===== STORY RING ===== */
+.story-ring {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: calc(100% + 6px);
+  height: calc(100% + 6px);
+  pointer-events: none;
+  animation: rotateStory 2s linear infinite;
 }
 
-/* Create story button */
+@keyframes rotateStory {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.story-ring-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ===== CREATE STORY ===== */
 .story-avatar.create {
-    background: #e4e6e9;
-    position: relative;
+  background: #f5f6f8;
+  border: 2px dashed #d0d5dd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.story-avatar.create:hover {
+  border-color: #ff385c;
+  background: #fff5f7;
 }
 
 .plus-icon {
-    font-size: 28px;
-    font-weight: 300;
-    color: #1877f2;
+  stroke: #666;
+  transition: stroke 0.2s ease;
 }
 
-/* Username text */
+.story-avatar.create:hover .plus-icon {
+  stroke: #ff385c;
+}
+
+/* ===== STORY USERNAME ===== */
 .story-username {
-    font-size: 11px;
-    color: #65676b;
-    text-align: center;
-    max-width: 64px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  font-size: 0.75rem;
+  color: #666;
+  max-width: 70px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  font-weight: 500;
 }
 
-/* Mobile */
+.create-story .story-username {
+  color: #ff385c;
+  font-weight: 600;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .story-circle {
+    min-width: 60px;
+  }
+
+  .story-avatar-wrapper {
+    width: 56px;
+    height: 56px;
+  }
+
+  .story-username {
+    font-size: 0.7rem;
+    max-width: 60px;
+  }
+
+  .avatar-fallback {
+    font-size: 1.2rem;
+  }
+}
+
 @media (max-width: 480px) {
-    .story-avatar {
-        width: 56px;
-        height: 56px;
-    }
-    
-    .story-circle {
-        width: 60px;
-    }
-    
-    .story-username {
-        font-size: 10px;
-    }
+  .story-circle {
+    min-width: 52px;
+  }
+
+  .story-avatar-wrapper {
+    width: 48px;
+    height: 48px;
+  }
+
+  .story-avatar-wrapper.has-story {
+    padding: 2px;
+  }
+
+  .story-ring {
+    top: -2px;
+    left: -2px;
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+  }
+
+  .story-username {
+    font-size: 0.65rem;
+    max-width: 50px;
+  }
+
+  .avatar-fallback {
+    font-size: 1rem;
+  }
+
+  .plus-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+  .story-ring {
+    animation: none;
+  }
+  
+  .story-circle:hover {
+    transform: none;
+  }
+}
+
+/* ===== DARK MODE ===== */
+@media (prefers-color-scheme: dark) {
+  .story-avatar {
+    background: #1a1a1a;
+  }
+
+  .story-avatar.create {
+    background: #2a2a2a;
+    border-color: #444;
+  }
+
+  .story-avatar.create:hover {
+    background: #3a2a2a;
+    border-color: #ff385c;
+  }
+
+  .story-username {
+    color: #aaa;
+  }
+
+  .create-story .story-username {
+    color: #ff385c;
+  }
+
+  .story-avatar-wrapper {
+    background: #2a2a2a;
+  }
+
+  .plus-icon {
+    stroke: #888;
+  }
 }

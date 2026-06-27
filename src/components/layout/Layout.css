@@ -15,3 +15,23 @@
     padding: 20px;
     min-height: 400px;
 }
+
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  margin-top: 0; /* Changed from margin-top: 70px */
+  padding-top: 70px; /* Use padding instead of margin */
+  background: #f5f5f5;
+}
+
+/* Or alternatively, keep the margin but ensure it's consistent */
+.main-content {
+  flex: 1;
+  margin-top: 70px;
+  background: #f5f5f5;
+}

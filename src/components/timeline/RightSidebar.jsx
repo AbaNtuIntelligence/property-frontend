@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Sidebars.css';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
+// ===== SVG ICONS =====
 const TrendingIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
@@ -23,116 +26,182 @@ const GlobeIcon = () => (
   </svg>
 );
 
-const TrendingData = [
-  { id: 1, title: 'Clifton Beach Villa', location: 'Cape Town', price: 'R8,500', image: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=60&h=60&fit=crop' },
-  { id: 2, title: 'Franschhoek Estate', location: 'Winelands', price: 'R12,000', image: 'https://images.unsplash.com/photo-1542401886-65d6c61db217?w=60&h=60&fit=crop' },
-  { id: 3, title: 'Kruger Bush Lodge', location: 'Mpumalanga', price: 'R15,000', image: 'https://images.unsplash.com/photo-1616423640778-28d1b53229bd?w=60&h=60&fit=crop' },
-  { id: 4, title: 'Umhlanga Penthouse', location: 'Durban', price: 'R5,500', image: 'https://images.unsplash.com/photo-1590114518871-9b5f5a6f7b5a?w=60&h=60&fit=crop' },
-  { id: 5, title: 'Plettenberg Bay', location: 'Garden Route', price: 'R7,200', image: 'https://images.unsplash.com/photo-1598948485426-ee9815f249d8?w=60&h=60&fit=crop' },
-];
+const HeartIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+  </svg>
+);
 
-const SuggestedHosts = [
-  { id: 1, name: 'Thando Ndlovu', location: 'Cape Town', avatar: 'https://images.unsplash.com/photo-1506863530036-1efeddceb993?w=40&h=40&fit=crop', properties: 8 },
-  { id: 2, name: 'Johan van der Merwe', location: 'Franschhoek', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop', properties: 5 },
-  { id: 3, name: 'Priya Naidoo', location: 'Durban', avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=40&h=40&fit=crop', properties: 4 },
-  { id: 4, name: 'Sipho Dlamini', location: 'Mbombela', avatar: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=40&h=40&fit=crop', properties: 3 },
-];
+const BedIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M3 8v11" />
+    <path d="M21 8v11" />
+    <rect x="3" y="6" width="18" height="6" rx="2" />
+    <circle cx="8" cy="11" r="1" />
+    <circle cx="16" cy="11" r="1" />
+  </svg>
+);
 
-const Destinations = [
-  { city: 'Cape Town', flag: '🇿🇦', count: 345 },
-  { city: 'Franschhoek', flag: '🇿🇦', count: 89 },
-  { city: 'Durban', flag: '🇿🇦', count: 234 },
-  { city: 'Kruger Park', flag: '🇿🇦', count: 67 },
-  { city: 'Plettenberg Bay', flag: '🇿🇦', count: 123 },
-  { city: 'Johannesburg', flag: '🇿🇦', count: 456 },
-];
+const BathIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <rect x="3" y="8" width="18" height="12" rx="2" />
+    <path d="M8 20v-4" />
+    <path d="M16 20v-4" />
+    <path d="M3 14h18" />
+    <path d="M6 6a3 3 0 0 1 6 0" />
+    <path d="M6 10V6" />
+  </svg>
+);
+
+const MapPinIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+);
 
 export default function RightSidebar() {
+  const [featuredProperties, setFeaturedProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchFeaturedProperties();
+  }, []);
+
+  const fetchFeaturedProperties = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_URL}/api/properties/featured/`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setFeaturedProperties(data);
+      } else {
+        setFeaturedProperties([]);
+      }
+    } catch (error) {
+      console.error('Error fetching featured properties:', error);
+      setFeaturedProperties([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatZAR = (amount) => {
+    return new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: 'ZAR',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  // ✅ FIXED: Handle both string and object image types
+  const getImageUrl = (image) => {
+    if (!image) return null;
+    
+    // If it's an object with an image property (like { image: 'url.jpg' })
+    if (typeof image === 'object' && image.image) {
+      const imgUrl = image.image;
+      if (imgUrl.startsWith('http')) return imgUrl;
+      return `${API_URL}${imgUrl}`;
+    }
+    
+    // If it's a string
+    if (typeof image === 'string') {
+      if (image.startsWith('http')) return image;
+      return `${API_URL}${image}`;
+    }
+    
+    // Fallback for arrays
+    if (Array.isArray(image) && image.length > 0) {
+      return getImageUrl(image[0]);
+    }
+    
+    return null;
+  };
+
+  if (loading) {
+    return (
+      <div className="right-sidebar">
+        <div className="sidebar-card">
+          <div className="loading-spinner-small"></div>
+          <p style={{ textAlign: 'center', color: '#888', fontSize: '0.9rem' }}>Loading featured properties...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="right-sidebar">
-      {/* Trending Properties */}
-      <div className="sidebar-card">
+      {/* Featured Properties */}
+      <div className="sidebar-card featured-card">
         <div className="sidebar-card-header">
           <h3>
-            <TrendingIcon />
-            Trending in SA
+            <HeartIcon />
+            Featured Properties
           </h3>
-          <Link to="/trending" className="see-all">View All</Link>
+          <Link to="/properties?featured=true" className="see-all">View All</Link>
         </div>
-        <div className="trending-list">
-          {TrendingData.map((item, index) => (
-            <Link key={item.id} to={`/property/${item.id}`} className="trending-item">
-              <span className="trending-rank">#{index + 1}</span>
-              <img src={item.image} alt={item.title} className="trending-image" />
-              <div className="trending-info">
-                <h4>{item.title}</h4>
-                <p>{item.location}</p>
-                <span className="trending-price">{item.price}</span>
-              </div>
+        {featuredProperties.length > 0 ? (
+          <div className="featured-list">
+            {featuredProperties.slice(0, 3).map((property) => (
+              <Link key={property.id} to={`/property/${property.id}`} className="featured-item">
+                <div className="featured-image-wrapper">
+                  <img 
+                    src={getImageUrl(property.images?.[0]) || 'https://placehold.co/80x80/e8e5e1/1a1a1a?text=Property'} 
+                    alt={property.title}
+                    className="featured-image"
+                  />
+                  <span className="featured-badge">Featured</span>
+                </div>
+                <div className="featured-info">
+                  <h4>{property.title}</h4>
+                  <p className="featured-location">
+                    <MapPinIcon />
+                    {property.city || 'South Africa'}
+                  </p>
+                  <div className="featured-specs">
+                    <span><BedIcon /> {property.bedrooms || '?'}</span>
+                    <span><BathIcon /> {property.bathrooms || '?'}</span>
+                  </div>
+                  <span className="featured-price">{formatZAR(property.monthly_rent)}/month</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-featured">
+            <p>No featured properties yet</p>
+            <Link to="/owner/properties" className="feature-cta">
+              Feature your property
             </Link>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Suggested Hosts */}
-      <div className="sidebar-card">
-        <div className="sidebar-card-header">
-          <h3>
-            <StarIcon />
-            Top Hosts
-          </h3>
-          <Link to="/hosts" className="see-all">See All</Link>
-        </div>
-        <div className="suggested-list">
-          {SuggestedHosts.map((host) => (
-            <div key={host.id} className="suggested-item">
-              <img src={host.avatar} alt={host.name} className="suggested-avatar" />
-              <div className="suggested-info">
-                <h4>{host.name}</h4>
-                <p>{host.location}</p>
-                {host.properties > 5 && (
-                  <span className="superhost-badge">Superhost</span>
-                )}
-              </div>
-              <button className="follow-btn">Follow</button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Special Offer Ad */}
-      <div className="sidebar-card ad-card">
+      {/* Ad Space */}
+      <div className="sidebar-card ad-card premium">
         <div className="ad-badge">Sponsored</div>
         <div className="ad-content">
-          <span className="ad-label">Special Offer</span>
-          <h4>List your property</h4>
-          <p>Reach millions of travelers in 2026</p>
-          <button className="ad-button">Become a Host →</button>
-        </div>
-      </div>
-
-      {/* Popular Destinations */}
-      <div className="sidebar-card">
-        <div className="sidebar-card-header">
-          <h3>
-            <GlobeIcon />
-            Destinations
-          </h3>
-          <Link to="/destinations" className="see-all">All</Link>
-        </div>
-        <div className="destinations-grid">
-          {Destinations.map((dest) => (
-            <Link key={dest.city} to={`/search?location=${dest.city}`} className="destination-item">
-              <span className="destination-flag">{dest.flag}</span>
-              <span className="destination-city">{dest.city}</span>
-              <span className="destination-count">{dest.count} stays</span>
-            </Link>
-          ))}
+          <div className="ad-image-placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <path d="M21 15l-5-5L5 21" />
+            </svg>
+          </div>
+          <span className="ad-label">Premium Listing</span>
+          <h4>Get Featured</h4>
+          <p>Boost your property visibility</p>
+          <button className="ad-button">Learn More →</button>
         </div>
       </div>
 
       {/* Second Ad */}
-      <div className="sidebar-card ad-card secondary">
+      <div className="sidebar-card ad-card standard">
         <div className="ad-badge">Promoted</div>
         <div className="ad-content">
           <h4>Travel Insurance</h4>

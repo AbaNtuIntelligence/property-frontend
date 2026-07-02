@@ -258,6 +258,38 @@ export default function CreateProperty() {
               />
             </div>
 
+
+          {/* ✅ FEATURED TOGGLE - Add this section */}
+          <div className="form-section">
+            <h3>Listing Visibility</h3>
+            <div className="featured-toggle">
+              <label className="toggle-switch">
+                <input
+                  type="checkbox"
+                  name="is_featured"
+                  checked={formData.is_featured}
+                  onChange={handleChange}
+                />
+                <span className="toggle-slider"></span>
+              </label>
+              <div className="toggle-label">
+                <strong>Feature this property</strong>
+                <p>Featured properties appear in the "Featured" section on the timeline</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="form-actions">
+            <button type="button" onClick={() => navigate('/timeline')} className="cancel-btn">
+              Cancel
+            </button>
+            <button type="submit" disabled={loading} className="submit-btn">
+              {loading ? 'Creating...' : 'List Property'}
+            </button>
+          </div>
+
+
             <div className="form-row">
               <div className="form-group">
                 <label>Property Type</label>

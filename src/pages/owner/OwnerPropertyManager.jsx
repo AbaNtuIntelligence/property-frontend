@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import './OwnerPropertyManager.css';
 
@@ -37,6 +37,7 @@ export default function OwnerPropertyManager() {
     parking_type: 'off_street',
     amenities: [],
     whatsapp_number: '',
+    is_featured: false,
     room_dimensions: {
       living_room: { length: '', width: '' },
       master_bedroom: { length: '', width: '' },
@@ -49,17 +50,14 @@ export default function OwnerPropertyManager() {
     total_area: '',
     existingImages: [],
     newImages: [],
-    imagePreviews: [],
-    existingVideos: [],
-    newVideos: [],
-    videoPreviews: []
+    imagePreviews: []
   });
 
-  const [amenitiesList] = useState([
+  const amenitiesList = [
     'WiFi', 'Pool', 'Gym', 'Parking', 'Pet Friendly', 
     'Furnished', 'Air Conditioning', 'Heating', 'Garden',
     'Balcony', 'Security', 'Backup Power', 'Water Backup'
-  ]);
+  ];
 
   useEffect(() => {
     fetchOwnerProperties();
@@ -80,11 +78,14 @@ export default function OwnerPropertyManager() {
 
       if (response.ok) {
         const allProperties = await response.json();
+        // Filter properties by owner
         const userProperties = allProperties.filter(p => p.owner_username === user?.username);
         setProperties(userProperties);
+      } else {
+        setError('Failed to load properties');
       }
     } catch (err) {
-      setError('Failed to load properties');
+      setError('Connection error');
     } finally {
       setLoading(false);
     }
@@ -93,7 +94,6 @@ export default function OwnerPropertyManager() {
   const handleEditProperty = (property) => {
     setEditingProperty(property);
     
-    // Parse room dimensions
     const roomDimensions = property.room_dimensions || {
       living_room: { length: '', width: '' },
       master_bedroom: { length: '', width: '' },
@@ -104,16 +104,9 @@ export default function OwnerPropertyManager() {
       study: { length: '', width: '' }
     };
 
-    // Get image URLs
     const existingImages = property.images?.map(img => ({
       id: img.id || Math.random(),
       url: img.image || img
-    })) || [];
-
-    // Get video URLs (if supported)
-    const existingVideos = property.videos?.map(video => ({
-      id: video.id || Math.random(),
-      url: video.video || video
     })) || [];
 
     setEditFormData({
@@ -136,14 +129,12 @@ export default function OwnerPropertyManager() {
       parking_type: property.parking_type || 'off_street',
       amenities: property.amenities || [],
       whatsapp_number: property.whatsapp_number || '',
+      is_featured: property.is_featured || false,
       room_dimensions: roomDimensions,
       total_area: property.total_area || '',
       existingImages: existingImages,
       newImages: [],
-      imagePreviews: [],
-      existingVideos: existingVideos,
-      newVideos: [],
-      videoPreviews: []
+      imagePreviews: []
     });
 
     setShowEditModal(true);
@@ -188,45 +179,11 @@ export default function OwnerPropertyManager() {
       return;
     }
 
-    // Check file sizes (max 10MB each)
-    const oversized = validFiles.filter(f => f.size > 10 * 1024 * 1024);
-    if (oversized.length > 0) {
-      setError('Some images exceed 10MB limit');
-      return;
-    }
-
     setEditFormData(prev => ({
       ...prev,
       newImages: [...prev.newImages, ...validFiles],
       imagePreviews: [
         ...prev.imagePreviews,
-        ...validFiles.map(file => URL.createObjectURL(file))
-      ]
-    }));
-    setError('');
-  };
-
-  const handleVideoUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const validFiles = files.filter(file => file.type.startsWith('video/'));
-    
-    if (validFiles.length === 0) {
-      setError('Please upload valid video files');
-      return;
-    }
-
-    // Check file sizes (max 50MB each)
-    const oversized = validFiles.filter(f => f.size > 50 * 1024 * 1024);
-    if (oversized.length > 0) {
-      setError('Some videos exceed 50MB limit');
-      return;
-    }
-
-    setEditFormData(prev => ({
-      ...prev,
-      newVideos: [...prev.newVideos, ...validFiles],
-      videoPreviews: [
-        ...prev.videoPreviews,
         ...validFiles.map(file => URL.createObjectURL(file))
       ]
     }));
@@ -250,23 +207,6 @@ export default function OwnerPropertyManager() {
     });
   };
 
-  const removeExistingVideo = (videoId) => {
-    setEditFormData(prev => ({
-      ...prev,
-      existingVideos: prev.existingVideos.filter(v => v.id !== videoId)
-    }));
-  };
-
-  const removeNewVideo = (index) => {
-    setEditFormData(prev => {
-      const newVideos = [...prev.newVideos];
-      const videoPreviews = [...prev.videoPreviews];
-      newVideos.splice(index, 1);
-      videoPreviews.splice(index, 1);
-      return { ...prev, newVideos, videoPreviews };
-    });
-  };
-
   const handleUpdateProperty = async (e) => {
     e.preventDefault();
     setUploading(true);
@@ -281,7 +221,6 @@ export default function OwnerPropertyManager() {
         return;
       }
 
-      // Prepare property data
       const propertyData = {
         title: editFormData.title,
         description: editFormData.description,
@@ -302,11 +241,11 @@ export default function OwnerPropertyManager() {
         parking_type: editFormData.parking_type,
         amenities: editFormData.amenities,
         whatsapp_number: editFormData.whatsapp_number,
+        is_featured: editFormData.is_featured,
         room_dimensions: editFormData.room_dimensions,
         total_area: editFormData.total_area || null
       };
 
-      // Update property details
       const response = await fetch(`${API_URL}/api/properties/${editingProperty.id}/update/`, {
         method: 'PUT',
         headers: {
@@ -327,48 +266,10 @@ export default function OwnerPropertyManager() {
           imageFormData.append('images', image);
         });
 
-        const imageResponse = await fetch(`${API_URL}/api/properties/${editingProperty.id}/upload-images/`, {
+        await fetch(`${API_URL}/api/properties/${editingProperty.id}/upload-images/`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` },
           body: imageFormData
-        });
-
-        if (!imageResponse.ok) {
-          console.warn('Some images failed to upload');
-        }
-      }
-
-      // Upload new videos (if supported)
-      if (editFormData.newVideos.length > 0) {
-        const videoFormData = new FormData();
-        editFormData.newVideos.forEach(video => {
-          videoFormData.append('videos', video);
-        });
-
-        const videoResponse = await fetch(`${API_URL}/api/properties/${editingProperty.id}/upload-videos/`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` },
-          body: videoFormData
-        });
-
-        if (!videoResponse.ok) {
-          console.warn('Some videos failed to upload');
-        }
-      }
-
-      // Delete removed images
-      const removedImageIds = editFormData.existingImages
-        .filter(img => img.id && !img._keep)
-        .map(img => img.id);
-
-      if (removedImageIds.length > 0) {
-        await fetch(`${API_URL}/api/properties/${editingProperty.id}/delete-images/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ image_ids: removedImageIds })
         });
       }
 
@@ -411,12 +312,28 @@ export default function OwnerPropertyManager() {
     }
   };
 
-  const formatZAR = (amount) => {
-    return new Intl.NumberFormat('en-ZA', {
-      style: 'currency',
-      currency: 'ZAR',
-      minimumFractionDigits: 0,
-    }).format(amount);
+  const toggleFeatured = async (propertyId, currentStatus) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_URL}/api/properties/${propertyId}/update/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ is_featured: !currentStatus })
+      });
+
+      if (response.ok) {
+        setProperties(prev => prev.map(p => 
+          p.id === propertyId ? { ...p, is_featured: !currentStatus } : p
+        ));
+        setSuccess(`Property ${!currentStatus ? 'featured' : 'unfeatured'} successfully!`);
+        setTimeout(() => setSuccess(''), 3000);
+      }
+    } catch (err) {
+      setError('Failed to toggle featured status');
+    }
   };
 
   const getImageUrl = (img) => {
@@ -425,6 +342,14 @@ export default function OwnerPropertyManager() {
     if (!url) return null;
     if (url.startsWith('http') || url.startsWith('data:')) return url;
     return `${API_URL}${url}`;
+  };
+
+  const formatZAR = (amount) => {
+    return new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: 'ZAR',
+      minimumFractionDigits: 0,
+    }).format(amount);
   };
 
   if (loading) {
@@ -440,13 +365,13 @@ export default function OwnerPropertyManager() {
     <div className="property-manager-container">
       <div className="property-manager-header">
         <h1>My Properties</h1>
-        <button onClick={() => navigate('/create-property')} className="add-property-btn">
+        <Link to="/property/new" className="add-property-btn">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
           List New Property
-        </button>
+        </Link>
       </div>
 
       {error && <div className="error-message">{error}</div>}
@@ -464,17 +389,25 @@ export default function OwnerPropertyManager() {
           </div>
           <h3>No properties yet</h3>
           <p>You haven't listed any properties. Click below to get started!</p>
-          <button onClick={() => navigate('/create-property')} className="list-property-btn">
+          <Link to="/property/new" className="list-property-btn">
             List Your First Property
-          </button>
+          </Link>
         </div>
       ) : (
         <div className="properties-list">
           {properties.map(property => (
             <div key={property.id} className="property-item">
+              {/* Property Image */}
               <div className="property-image-small">
                 {property.images && property.images.length > 0 ? (
-                  <img src={getImageUrl(property.images[0])} alt={property.title} />
+                  <img 
+                    src={getImageUrl(property.images[0])} 
+                    alt={property.title}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://placehold.co/80x80/e8e5e1/1a1a1a?text=No+Image';
+                    }}
+                  />
                 ) : (
                   <div className="no-image-small">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -485,7 +418,13 @@ export default function OwnerPropertyManager() {
                     </svg>
                   </div>
                 )}
+                {/* Featured Badge */}
+                {property.is_featured && (
+                  <span className="featured-badge">Featured</span>
+                )}
               </div>
+
+              {/* Property Details */}
               <div className="property-details">
                 <h3>{property.title}</h3>
                 <p className="property-price">{formatZAR(property.monthly_rent)}<span>/month</span></p>
@@ -494,23 +433,29 @@ export default function OwnerPropertyManager() {
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                     <circle cx="12" cy="10" r="3" />
                   </svg>
-                  {property.city}
+                  {property.city || 'Location not set'}
                 </p>
                 <div className="property-status">
                   <span className={`status-badge ${property.status || 'available'}`}>
                     {property.status || 'available'}
                   </span>
                   {property.has_inverter && (
-                    <span className="inverter-badge">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                      </svg>
-                      Inverter
-                    </span>
+                    <span className="inverter-badge">Inverter</span>
                   )}
                 </div>
               </div>
+
+              {/* Property Actions */}
               <div className="property-actions">
+                {/* Featured Toggle Button */}
+                <button 
+                  className={`feature-toggle-btn ${property.is_featured ? 'active' : ''}`}
+                  onClick={() => toggleFeatured(property.id, property.is_featured)}
+                >
+                  {property.is_featured ? '★ Featured' : '☆ Feature'}
+                </button>
+                
+                {/* Edit Button */}
                 <button className="edit-property-btn" onClick={() => handleEditProperty(property)}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -518,6 +463,8 @@ export default function OwnerPropertyManager() {
                   </svg>
                   Edit
                 </button>
+                
+                {/* View Button */}
                 <button className="view-property-btn" onClick={() => navigate(`/property/${property.id}`)}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -525,6 +472,8 @@ export default function OwnerPropertyManager() {
                   </svg>
                   View
                 </button>
+                
+                {/* Delete Button */}
                 <button className="delete-property-btn" onClick={() => handleDeleteProperty(property.id)}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polyline points="3 6 5 6 21 6" />
@@ -551,6 +500,26 @@ export default function OwnerPropertyManager() {
                 </svg>
               </button>
             </div>
+
+            <div className="property-actions">
+  {/* ✅ ADD FEATURED TOGGLE BUTTON HERE */}
+  <button 
+    className={`feature-toggle-btn ${property.is_featured ? 'active' : ''}`}
+    onClick={() => toggleFeatured(property.id, property.is_featured)}
+  >
+    {property.is_featured ? '★ Featured' : '☆ Feature'}
+  </button>
+  
+  <button className="edit-property-btn" onClick={() => handleEditProperty(property)}>
+    Edit
+  </button>
+  <button className="view-property-btn" onClick={() => navigate(`/property/${property.id}`)}>
+    View
+  </button>
+  <button className="delete-property-btn" onClick={() => handleDeleteProperty(property.id)}>
+    Delete
+  </button>
+</div>
             <div className="modal-body">
               <form onSubmit={handleUpdateProperty} className="edit-property-form">
                 {/* Basic Information */}
@@ -584,7 +553,6 @@ export default function OwnerPropertyManager() {
                         <option value="house">House</option>
                         <option value="condo">Condo</option>
                         <option value="townhouse">Townhouse</option>
-                        <option value="villa">Villa</option>
                       </select>
                     </div>
                     <div className="form-group">
@@ -676,9 +644,32 @@ export default function OwnerPropertyManager() {
                   </div>
                 </div>
 
+                {/* Featured Toggle */}
+                <div className="form-section">
+                  <h3>Listing Visibility</h3>
+                  <div className="featured-toggle">
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        name="is_featured"
+                        checked={editFormData.is_featured}
+                        onChange={(e) => setEditFormData(prev => ({
+                          ...prev,
+                          is_featured: e.target.checked
+                        }))}
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                    <div className="toggle-label">
+                      <strong>Feature this property</strong>
+                      <p>Featured properties appear in the "Featured" section on the timeline</p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* South African Features */}
                 <div className="form-section">
-                  <h3>SA Features</h3>
+                  <h3>South African Features</h3>
                   <div className="checkbox-group">
                     <label>
                       <input
@@ -819,159 +810,43 @@ export default function OwnerPropertyManager() {
                       onChange={handleEditFormChange}
                       step="0.1"
                       min="0"
-                      placeholder="e.g., 120.5"
                     />
                   </div>
                 </div>
 
-                {/* Image Management */}
+                {/* Images */}
                 <div className="form-section">
                   <h3>Images</h3>
-                  <div className="media-management">
-                    {/* Existing Images */}
-                    {editFormData.existingImages.length > 0 && (
-                      <div className="media-grid">
-                        <label>Current Images</label>
-                        <div className="media-items">
-                          {editFormData.existingImages.map((img) => (
-                            <div key={img.id} className="media-item">
-                              <img src={getImageUrl(img)} alt="Property" />
-                              <button
-                                type="button"
-                                className="remove-media"
-                                onClick={() => removeExistingImage(img.id)}
-                              >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <line x1="18" y1="6" x2="6" y2="18" />
-                                  <line x1="6" y1="6" x2="18" y2="18" />
-                                </svg>
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* New Images */}
-                    {editFormData.imagePreviews.length > 0 && (
-                      <div className="media-grid">
-                        <label>New Images to Upload</label>
-                        <div className="media-items">
-                          {editFormData.imagePreviews.map((preview, index) => (
-                            <div key={index} className="media-item">
-                              <img src={preview} alt={`Preview ${index + 1}`} />
-                              <button
-                                type="button"
-                                className="remove-media"
-                                onClick={() => removeNewImage(index)}
-                              >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <line x1="18" y1="6" x2="6" y2="18" />
-                                  <line x1="6" y1="6" x2="18" y2="18" />
-                                </svg>
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="upload-area">
-                      <label className="upload-btn">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="2" y="4" width="20" height="16" rx="2" />
-                          <circle cx="12" cy="12" r="4" />
-                          <line x1="17.5" y1="8.5" x2="17.51" y2="8.51" />
-                        </svg>
-                        Upload Images
-                        <input
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          onChange={handleImageUpload}
-                          style={{ display: 'none' }}
-                        />
-                      </label>
-                      <small>JPEG, PNG, WEBP up to 10MB each</small>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Video Management */}
-                <div className="form-section">
-                  <h3>Videos</h3>
-                  <div className="media-management">
-                    {/* Existing Videos */}
-                    {editFormData.existingVideos.length > 0 && (
-                      <div className="media-grid">
-                        <label>Current Videos</label>
-                        <div className="media-items">
-                          {editFormData.existingVideos.map((video) => (
-                            <div key={video.id} className="media-item video-item">
-                              <video src={getImageUrl(video)} controls />
-                              <button
-                                type="button"
-                                className="remove-media"
-                                onClick={() => removeExistingVideo(video.id)}
-                              >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <line x1="18" y1="6" x2="6" y2="18" />
-                                  <line x1="6" y1="6" x2="18" y2="18" />
-                                </svg>
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* New Videos */}
-                    {editFormData.videoPreviews.length > 0 && (
-                      <div className="media-grid">
-                        <label>New Videos to Upload</label>
-                        <div className="media-items">
-                          {editFormData.videoPreviews.map((preview, index) => (
-                            <div key={index} className="media-item video-item">
-                              <video src={preview} controls />
-                              <button
-                                type="button"
-                                className="remove-media"
-                                onClick={() => removeNewVideo(index)}
-                              >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <line x1="18" y1="6" x2="6" y2="18" />
-                                  <line x1="6" y1="6" x2="18" y2="18" />
-                                </svg>
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="upload-area">
-                      <label className="upload-btn">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="2" y="4" width="20" height="16" rx="2" />
-                          <polygon points="10 8 16 12 10 16 10 8" />
-                        </svg>
-                        Upload Videos
-                        <input
-                          type="file"
-                          accept="video/*"
-                          multiple
-                          onChange={handleVideoUpload}
-                          style={{ display: 'none' }}
-                        />
-                      </label>
-                      <small>MP4, MOV, AVI up to 50MB each</small>
-                    </div>
-                  </div>
+<div className="property-image-small">
+  {property.images && property.images.length > 0 ? (
+    <img 
+      src={getImageUrl(property.images[0])} 
+      alt={property.title}
+      onError={(e) => {
+        e.target.onerror = null;
+        e.target.src = 'https://placehold.co/80x80/e8e5e1/1a1a1a?text=No+Image';
+      }}
+    />
+  ) : (
+    <div className="no-image-small">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <rect x="3" y="4" width="18" height="18" rx="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </svg>
+    </div>
+  )}
+  {property.is_featured && (
+    <span className="featured-badge">Featured</span>
+  )}
+</div>
                 </div>
 
                 <div className="modal-actions">
                   <button type="button" className="cancel-btn" onClick={() => setShowEditModal(false)}>
-                    Cancel                  </button>
+                    Cancel
+                  </button>
                   <button type="submit" className="save-btn" disabled={uploading}>
                     {uploading ? 'Saving...' : 'Save Changes'}
                   </button>

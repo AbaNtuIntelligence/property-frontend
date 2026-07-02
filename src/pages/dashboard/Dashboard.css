@@ -1336,3 +1336,89 @@
     color: #666;
   }
 }
+
+
+/* ===== FEATURE TOGGLE BUTTON ===== */
+.feature-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  background: #f0f2f5;
+  color: #666;
+}
+
+.feature-toggle-btn:hover {
+  background: #e5e7eb;
+  transform: translateY(-2px);
+}
+
+.feature-toggle-btn.active {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.feature-toggle-btn.active:hover {
+  background: #fde68a;
+}
+
+/* ===== EDIT, VIEW, DELETE BUTTONS ===== */
+.edit-property-btn,
+.view-property-btn,
+.delete-property-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.edit-property-btn {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.edit-property-btn:hover {
+  background: #c7d2fe;
+  transform: translateY(-2px);
+}
+
+.view-property-btn {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.view-property-btn:hover {
+  background: #a7f3d0;
+  transform: translateY(-2px);
+}
+
+.delete-property-btn {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.delete-property-btn:hover {
+  background: #fecaca;
+  transform: translateY(-2px);
+}
+
+.edit-property-btn svg,
+.view-property-btn svg,
+.delete-property-btn svg {
+  width: 14px;
+  height: 14px;
+}

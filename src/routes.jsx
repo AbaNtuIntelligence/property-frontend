@@ -8,11 +8,13 @@ import Properties from "./pages/properties/Properties";
 import PropertyDetail from "./pages/property-detail/PropertyDetail";
 import BookingPage from "./pages/booking/BookingPage";
 import WishlistPage from "./pages/wishlist/WishlistPage";
+import NotificationsPage from "./pages/notifications/NotificationsPage"; // ADD THIS
 import PropertyForm from "./components/property/PropertyForm";
 import Unauthorized from "./components/common/Unauthorized";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Dashboard from "./pages/dashboard/Dashboard";
 import TimelineLayout from "./components/layout/TimelineLayout";
+import Timeline from "./pages/timeline/Timeline"; // ADD THIS - Import Timeline
 
 export default function AppRoutes() {
   return (
@@ -23,6 +25,10 @@ export default function AppRoutes() {
       <Route path="/register" element={<Register userType="SEEKER" />} />
       <Route path="/register-owner" element={<Register userType="OWNER" />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
+      <Route path="/timeline" element={<Timeline />} />
+
+      {/* Timeline - Public access */}
+      <Route path="/timeline" element={<Timeline />} />
 
       {/* Marketplace Discovery (OPEN) */}
       <Route path="/properties" element={<TimelineLayout />}>
@@ -42,6 +48,16 @@ export default function AppRoutes() {
       >
         <Route index element={<WishlistPage />} />
       </Route>
+
+      {/* NOTIFICATIONS - Protected */}
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <NotificationsPage />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/dashboard"

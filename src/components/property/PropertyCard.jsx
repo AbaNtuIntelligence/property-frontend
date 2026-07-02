@@ -58,12 +58,9 @@ export default function PropertyCard({ property, featured = false, compact = fal
           onError={() => setImageError(true)}
         />
         
-        {featured && (
-          <span className="card-badge featured-badge">
-            <StarIcon />
-            Featured
-          </span>
-        )}
+      {property.is_featured && (
+  <span className="featured-badge">Featured</span>
+)}
         
         {property.hasInverter && (
           <span className="card-badge inverter-badge">

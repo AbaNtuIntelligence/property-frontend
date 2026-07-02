@@ -52,7 +52,7 @@ export default function CommentSection({
                 </div>
                 <p className="comment-text">{comment.text}</p>
                 <div className="comment-actions">
-                  <button className="comment-like-btn">Like</button>
+                  {/* Like button removed */}
                   <button className="comment-reply-btn">Reply</button>
                 </div>
               </div>

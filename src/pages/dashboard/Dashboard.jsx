@@ -44,6 +44,31 @@ export default function Dashboard() {
   
   const fetchRef = useRef(false);
 
+
+const toggleFeatured = async (propertyId, currentStatus) => {
+  try {
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`${API_URL}/api/properties/${propertyId}/update/`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ is_featured: !currentStatus })
+    });
+
+    if (response.ok) {
+      setMyProperties(prev => prev.map(p => 
+        p.id === propertyId ? { ...p, is_featured: !currentStatus } : p
+      ));
+      setSuccess(`Property ${!currentStatus ? 'featured' : 'unfeatured'} successfully!`);
+      setTimeout(() => setSuccess(''), 3000);
+    }
+  } catch (err) {
+    setError('Failed to toggle featured status');
+  }
+};
+
   // SVG Icons
   const IconUser = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -436,6 +461,29 @@ export default function Dashboard() {
       </div>
     );
   }
+  const getImageUrl = (image) => {
+  if (!image) return null;
+  
+  // If it's an object with an image property
+  if (typeof image === 'object' && image.image) {
+    const imgUrl = image.image;
+    if (imgUrl.startsWith('http')) return imgUrl;
+    return `${API_URL}${imgUrl}`;
+  }
+  
+  // If it's a string
+  if (typeof image === 'string') {
+    if (image.startsWith('http')) return image;
+    return `${API_URL}${image}`;
+  }
+  
+  // If it's an array, take the first element
+  if (Array.isArray(image) && image.length > 0) {
+    return getImageUrl(image[0]);
+  }
+  
+  return null;
+};
 
   return (
     <div className="dashboard-container">
@@ -553,17 +601,30 @@ export default function Dashboard() {
                       </div>
                     )}
                   </div>
-                  <div className="avatar-upload-buttons">
-                    <label className="upload-btn">
-                      <IconCamera /> Change Photo
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        style={{ display: 'none' }}
-                      />
-                    </label>
-                  </div>
+                  <div className="property-image-small">
+  {property.images && property.images.length > 0 ? (
+    <img 
+      src={getImageUrl(property.images[0])} 
+      alt={property.title}
+      onError={(e) => {
+        e.target.onerror = null;
+        e.target.src = 'https://placehold.co/80x80/e8e5e1/1a1a1a?text=No+Image';
+      }}
+    />
+  ) : (
+    <div className="no-image-small">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <rect x="3" y="4" width="18" height="18" rx="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </svg>
+    </div>
+  )}
+  {property.is_featured && (
+    <span className="featured-badge">Featured</span>
+  )}
+</div>
                   <p className="upload-hint">JPEG, PNG up to 5MB</p>
                 </div>
               </div>
@@ -701,17 +762,25 @@ export default function Dashboard() {
 
 
                     
-                    <div className="property-actions">
-                      <button className="edit-property-btn" onClick={() => handleEditProperty(property)}>
-                        <IconEdit /> Edit
-                      </button>
-                      <button className="delete-property-btn" onClick={() => handleDeleteProperty(property.id)}>
-                        <IconTrash /> Delete
-                      </button>
-                      <button className="view-property-btn" onClick={() => handleViewProperty(property.id)}>
-                        <IconEye /> View
-                      </button>
-                    </div>
+  <div className="property-actions">
+  {/* ✅ FEATURED TOGGLE - ADD THIS FIRST */}
+  <button 
+    className={`feature-toggle-btn ${property.is_featured ? 'active' : ''}`}
+    onClick={() => toggleFeatured(property.id, property.is_featured)}
+  >
+    {property.is_featured ? '★ Featured' : '☆ Feature'}
+  </button>
+  
+  <button className="edit-property-btn" onClick={() => handleEditProperty(property)}>
+    <IconEdit /> Edit
+  </button>
+  <button className="delete-property-btn" onClick={() => handleDeleteProperty(property.id)}>
+    <IconTrash /> Delete
+  </button>
+  <button className="view-property-btn" onClick={() => handleViewProperty(property.id)}>
+    <IconEye /> View
+  </button>
+</div>
                   </div>
                 ))}
               </div>
@@ -772,6 +841,10 @@ export default function Dashboard() {
                   </div>
                 </div>
                 
+
+
+
+
                 <div className="form-row">
                   <div className="form-group">
                     <label>Bedrooms</label>

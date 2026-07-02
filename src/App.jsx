@@ -1,32 +1,56 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './hooks/useAuth';
-import Layout from './components/layout/Layout';
-import LandingPage from './pages/landingPage/LandingPage';
-import Login from './pages/login/Login';
-import Register from './pages/register/Register';
-import Timeline from './pages/timeline/Timeline';
-import Dashboard from './pages/dashboard/Dashboard';
-import PropertyDetailsPage from './pages/property-detail/PropertyDetailsPage';
-import CreateProperty from './pages/properties/CreateProperty';
-import PropertiesPage from './pages/properties/PropertiesPage'; // Add this import
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./hooks/useAuth";
+import { BookingProvider } from "./context/BookingContext";
+import { WishlistProvider } from "./context/WishlistContext";
+import Layout from "./components/layout/Layout";
+import LandingPage from "./pages/landingPage/LandingPage";
+import Login from "./pages/login/Login";
+import Register from "./pages/register/Register";
+import Properties from "./pages/properties/Properties";
+import PropertyDetail from "./pages/property-detail/PropertyDetail";
+import CreateProperty from "./pages/properties/CreateProperty"; // ← ADD THIS
+import BookingPage from "./pages/booking/BookingPage";
+import WishlistPage from "./pages/wishlist/WishlistPage";
+import Dashboard from "./pages/dashboard/Dashboard";
+import Timeline from "./pages/timeline/Timeline";
+import NotificationsPage from "./pages/notifications/NotificationsPage";
+import OwnerPropertyManager from "./pages/owner/OwnerPropertyManager"; // ← ADD THIS
+import "./styles/global.css";
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout><LandingPage /></Layout>} />
-          <Route path="/login" element={<Layout><Login /></Layout>} />
-          <Route path="/register" element={<Layout><Register /></Layout>} />
-          <Route path="/timeline" element={<Layout><Timeline /></Layout>} />
-          <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-          <Route path="/properties" element={<Layout><PropertiesPage /></Layout>} />
-          <Route path="/property/:id" element={<Layout><PropertyDetailsPage /></Layout>} />
-          <Route path="/property/new" element={<Layout><CreateProperty /></Layout>} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <Router>
+      <AuthProvider>
+        <WishlistProvider>
+          <BookingProvider>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/properties" element={<Properties />} />
+                
+                {/* ✅ Specific route FIRST - for creating a new property */}
+                <Route path="/property/new" element={<CreateProperty />} />
+                
+                {/* ✅ Dynamic route SECOND - for viewing a specific property */}
+                <Route path="/property/:id" element={<PropertyDetail />} />
+                
+                <Route path="/booking/:id" element={<BookingPage />} />
+                <Route path="/wishlist" element={<WishlistPage />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/timeline" element={<Timeline />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
+                
+                {/* ✅ Owner routes */}
+                <Route path="/owner/properties" element={<OwnerPropertyManager />} />
+              </Routes>
+            </Layout>
+          </BookingProvider>
+        </WishlistProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

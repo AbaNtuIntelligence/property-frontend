@@ -61,11 +61,11 @@ export default function PropertiesPage() {
     }
   };
 
-  // ✅ FIX: Helper function to get image URL
+  // ✅ FIX: Add this helper function to get image URL
   const getImageUrl = (image) => {
     if (!image) return null;
     
-    // If it's an object with an image property (like { image: 'url.jpg' })
+    // If it's an object with an image property
     if (typeof image === 'object' && image.image) {
       const imgUrl = image.image;
       if (imgUrl.startsWith('http')) return imgUrl;

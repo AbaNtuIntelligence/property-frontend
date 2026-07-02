@@ -3,6 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import './Navbar.css';
 
+// ===== LOGO COMPONENT =====
+const AbantuLogo = () => (
+  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="40" height="40" rx="10" fill="#ff385c"/>
+    <path d="M20 6C14.477 6 10 10.477 10 16C10 23 14 28 20 34C26 28 30 23 30 16C30 10.477 25.523 6 20 6Z" fill="white" opacity="0.9"/>
+    <path d="M20 11C16.686 11 14 13.686 14 17C14 20.314 16.686 23 20 23C23.314 23 26 20.314 26 17C26 13.686 23.314 11 20 11Z" fill="#ff385c"/>
+    <path d="M20 25L16 32H24L20 25Z" fill="white"/>
+  </svg>
+);
+
 // ===== ICONS =====
 const MenuIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -65,11 +75,14 @@ const TimelineIcon = () => (
   </svg>
 );
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
 export default function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [userAvatar, setUserAvatar] = useState(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -78,6 +91,22 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Get user data
+  const userName = user?.full_name || user?.username || 'User';
+  
+  // Get user avatar URL
+  useEffect(() => {
+    if (user?.avatar) {
+      const avatarUrl = user.avatar.startsWith('http') 
+        ? user.avatar 
+        : `${API_URL}${user.avatar}`;
+      setUserAvatar(avatarUrl);
+    } else if (user?.username) {
+      // Fallback to generated avatar
+      setUserAvatar(`https://ui-avatars.com/api/?background=1877f2&color=fff&bold=true&size=100&name=${encodeURIComponent(userName)}`);
+    }
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -93,11 +122,7 @@ export default function Navbar() {
     <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
       <div className="nav-container">
         <Link to="/" className="logo" onClick={handleLinkClick}>
-          <img 
-            src="/logo.png" 
-            alt="AbaNtu Property Rentals" 
-            className="logo-image"
-          />
+          <AbantuLogo />
           <div className="logo-text-wrapper">
             <span className="logo-text">AbaNtu</span>
             <span className="logo-subtext">Property Rentals</span>
@@ -128,7 +153,7 @@ export default function Navbar() {
               <Link to="/wishlist" className="nav-link" onClick={handleLinkClick}>
                 <HeartIcon />
                 <span>Wishlist</span>
-                <span className="nav-badge">12</span>
+                <span className="nav-badge">0</span>
               </Link>
               
               <Link to="/dashboard" className="nav-link" onClick={handleLinkClick}>
@@ -139,13 +164,13 @@ export default function Navbar() {
               <div className="user-menu">
                 <div className="user-info">
                   <span className="user-avatar">
-                    {user?.avatar ? (
-                      <img src={user.avatar} alt={user.name} />
+                    {userAvatar ? (
+                      <img src={userAvatar} alt={userName} />
                     ) : (
                       <UserIcon />
                     )}
                   </span>
-                  <span className="user-name">Hi, {user?.name || 'User'}</span>
+                  <span className="user-name">Hi, {userName}</span>
                 </div>
                 <button onClick={handleLogout} className="logout-btn">
                   <LogoutIcon />

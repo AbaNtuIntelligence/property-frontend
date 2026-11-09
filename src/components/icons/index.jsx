@@ -1,4 +1,4 @@
-// ===== PREMIUM SVG ICON SYSTEM =====
+import React from 'react';
 
 // Logo & Brand
 export const LogoIcon = () => (

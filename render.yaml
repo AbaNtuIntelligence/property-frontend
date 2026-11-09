@@ -1,12 +1,10 @@
-# render.yaml
-services:
+﻿services:
   - type: web
     name: property-frontend
     runtime: static
-    buildCommand: npm install && npm run build  # ← Added npm install
+    buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
-    envVars:
-      - key: VITE_API_URL
-        value: https://rental-backend-1-263v.onrender.com
-      - key: NPM_CONFIG_FROZEN_LOCKFILE
-        value: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
